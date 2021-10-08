@@ -1,0 +1,122 @@
+#' @title xwas
+#' @description  this is a function to run an exposure wide association study (XWAS) with any phenotype and a set of exposure variables
+
+#' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
+
+#' @param df the data frame inpt
+#' @param X column name of exposure variables to run XWAS
+#' @param cov column name of covariates
+#' @param mod type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
+#' @param IDA list of IDs to include in XWAS
+#' @param removes any exposure response to remove from XWAS, in the form of a list
+#' @param fdr whether or not to adjust for multiple hypothesis correctin
+#'
+#' @export
+#'
+#' @importFrom magrittr %>%
+#' @import naniar
+#' @import glmnet
+#' @import broom
+#' @import ggplot2
+
+
+xwas = function(df,
+                X,
+                cov,
+                mod,
+                IDA,
+                removes = NULL,
+                fdr = TRUE) {
+  #data: data frame
+  #Xs: names of variables
+  #cov: name of covariates
+  #model: type of model (ie lm, logistic,cox)
+  #removes: exposure responses to remove (e.g. "Do not know")
+  #fdr: adds column with FDR adjusted p value
+  #plot: plots effect sizes of signficant assocations (FDR<0.05)
+
+  `%notin%` <- Negate(`%in%`)
+
+  df = df[which(df$ID %in% IDA), ]
+  ci <- which(colnames(df) %in% X)
+  df$place = 0
+  mat = c()
+
+  pb <- txtProgressBar(0, length(ci), style = 3)
+  stepi = 0
+
+  for (i in ci) {
+    stored <-
+      data.frame(df[, c(which(colnames(df) %in% c('PHENO', cov)), which(colnames(df) ==
+                                                                          'place'), i)])
+
+    if (mod == 'cox') {
+      stored <-
+        data.frame(df[, c(which(colnames(df) %in% c('PHENO', 'TIME', cov)), which(colnames(df) ==
+                                                                                    'place'), i)])
+    }
+
+    #omit missing and unwanted X var
+    stored <- na.omit(stored)
+    r = which(stored[, ncol(stored)] %in% removes)
+    if (length(r) != 0) {
+      stored <- stored[-r, ]
+    }
+
+    #skip if X only has one value
+    if(nrow(unique(stored[ncol(stored)]))==1){
+      print(paste(colnames(stored)[ncol(stored)],'has only one value, skipped'))
+      next
+    }
+
+    #run regression models
+
+    if (mod == 'lm') {
+      fit <- lm(PHENO ~ 0 + ., data = stored)
+    }
+    if (mod == 'logistic') {
+      fit <- glm(PHENO ~ 0 + ., data = stored, family = 'binomial')
+    }
+    if (mod == 'cox') {
+      fit <-
+        survival::coxph(survival::Surv(TIME, PHENO) ~ 0 + ., data = stored)
+    }
+    if (mod %notin% c('cox', 'lm', 'logistic')) {
+      print('please specificy a regression model: linear, logsitic, or cox ')
+    }
+
+    #get index for which coeffs to extract
+    temp = data.frame(coef(fit))
+    tempp = temp[which(row.names(temp) == 'place') + 1, ]
+
+    #case for if there is NA in the first categorical factor, will iterate until non-NA
+    if (is.na(tempp) == TRUE) {
+      for (k in 2:(nrow(temp) - which(row.names(temp) == 'place'))) {
+        tempp = temp[which(row.names(temp) == 'place') + k, ]
+        if (is.na(tempp) == FALSE) {
+          break
+        }
+      }
+
+    }
+
+    summary_fit <- data.frame(rbind(summary(fit)$coefficients),nrow(stored))
+
+    summary_fit <-
+      summary_fit[(which(summary_fit[, 1] == tempp):nrow(summary_fit)), ]
+    mat = rbind(mat, summary_fit)
+
+    stepi = stepi + 1
+    setTxtProgressBar(pb, stepi)
+
+  }
+
+  mat = data.frame(mat)
+
+  #FDR correction of p values
+  if (fdr == TRUE) {
+    mat$fdr = p.adjust(mat[, ncol(mat)-1])
+  }
+
+  return(mat)
+}
