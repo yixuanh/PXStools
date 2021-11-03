@@ -9,7 +9,7 @@
 #'
 #' @format An object of class \code{"cross"}; see \code{\link[qtl]{read.cross}}.
 #' #' \describe{
-#'  \item{IID}{ID's of individuals}
+#'  \item{ID}{ID's of individuals}
 #'  \item{SEX}{sex of individuals (character)}
 #'  \item{AGE}{age (numeric)}
 #'  \item{COV_Q_OTHER}{quantitative covariates (numeric)}
