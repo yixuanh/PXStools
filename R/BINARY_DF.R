@@ -16,7 +16,7 @@
 #'  \item{COV_C_OTHER}{categorical covariate (categorical)}
 #'  \item{PC_6-14}{genetic principal components (randomly generated)}
 #'  \item{VAR1-18}{numeric exposure variables (numeric)}
-#'  \item{VAR19-33}{categorical exposure variables (categorical)}
+#'  \item{VAR19-35}{categorical exposure variables (categorical)}
 #'  \item{PHENO}{binary phenotype (0/1)}
 #'  \item{TIME}{survival time (months)}
 #' }
