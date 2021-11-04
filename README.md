@@ -76,6 +76,14 @@ sigx
 # [11] "VAR_18" "VAR_22" "VAR_25"
 
 ```
+Visualize results from XWAS: 
+```R
+manhattan_xwas(xdff = XWAS_results,pval = 'fdr',thresh = 0.05) #plots p values on -log10 scale
+plot_coeff_xwas(xdff = XWAS_results,pval = 'fdr',coeff='Estimate',thresh = 0.05) #plots coefficients of signficant results, set all=TRUE to plot all results
+```
+![Untitled 3 001](https://user-images.githubusercontent.com/54297194/140362768-f24f7990-0e37-47b4-91ea-675f62d64bec.png)
+
+ 
 Run PXS (with only signficant exposures): 
 ```R
 PXSS=PXS(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
@@ -107,5 +115,6 @@ head(PXSS)
 # 27 4345   MALE  47    1.258407  CATEGORY_4 -0.009366692      D      A    69 74.13231
 ```
      
+
 
 
