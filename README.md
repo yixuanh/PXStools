@@ -28,10 +28,15 @@ In both the ``xwas`` and ``PXS`` functions, the user can input any set of exposu
 
 ## Requirements
 The input data frame must have the following columns: 
+
 ``ID``: ID of indivduals in dataframe
+
 ``PHENO``: phenotype of interest (binary (0/1) or continuous)
+
 if running survival analysis, it must also have 
+
 ``TIME``: time to event or censoring
+
 In addition to the the final prediction group, two other groups are needed to train the model. 
 
 ## Example
