@@ -1,6 +1,6 @@
 #' @title PXS
 #' @description  this function builds a polyexposure risk score
-#'
+#' @source
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
 
 #' @param df the data frame inpt
@@ -90,8 +90,10 @@ PXS = function(df,
 
   Xtemp = keep[, which(colnames(keep) %in% X)]
   rt=responsetab(Xtemp)
+  nn=which(rt$N==0)
+  if(length(nn)!=0){
   rt=rt[-which(rt$N==0),]
-
+  }
 
   #############
   #LASSO

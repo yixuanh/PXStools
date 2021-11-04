@@ -3,6 +3,9 @@
 \name{PXS}
 \alias{PXS}
 \title{PXS}
+\source{
+
+}
 \usage{
 PXS(df, X, cov, mod, IDA, IDB, IDC, seed, removes = NULL, intermediate = F)
 }
