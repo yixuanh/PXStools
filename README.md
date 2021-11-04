@@ -36,7 +36,7 @@ In addition to the the final prediction group, two other groups are needed to tr
 
 ## Example
 
-This will be an example using the ``CONT_DF.R`` dataset provided in the package. The CONT_DF dataset contains the individual ID, sex, gender, continuous and categorical variables, and a continuous phenotype. We will use SEX, AGE, COV_Q_OTHER, and COV_C_OTHER, as our covariate. The initial set of exposures that we are interested in are VAR_1 through VAR_33. We will be using a linear model. 
+This will be an example using the ``CONT_DF.RData`` dataset provided in the package. The CONT_DF dataset contains the individual ID, sex, gender, continuous and categorical variables, and a continuous phenotype. We will use SEX, AGE, COV_Q_OTHER, and COV_C_OTHER, as our covariate. The initial set of exposures that we are interested in are VAR_1 through VAR_33. We will be using a linear model. 
 
 
 Store variable names: 
