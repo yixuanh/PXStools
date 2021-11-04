@@ -23,9 +23,9 @@ manhattan_xwas = function(xdff, pval, thresh = 0.05) {
     ggplot2::geom_point(ggplot2::aes(color = 1:nrow(xdff)), size = 2) +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "none") +
-    ggplot2::ylab('Effect Size') +
+    ggplot2::ylab('p-value (-log10)') +
     ggplot2::xlab('Exposure') +
-    ggplot2::geom_hline(yintercept = thresh,
+    ggplot2::geom_hline(yintercept = -log10(thresh),
                         linetype = "dashed",
                         color = "blue") +
     ggplot2::theme(axis.text.x = ggplot2::element_text(
