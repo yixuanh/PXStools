@@ -68,6 +68,8 @@ PXS = function(df,
 
 
   responsetab=function(dff){
+    resptab=c()
+    resptab2=c()
     nums = data.frame(sapply(colnames(dff), function(x)
       class(dff[[x]])))
     if(nrow(nums)!=2|ncol(dff)==2){
@@ -76,7 +78,7 @@ PXS = function(df,
     }
 
     cati = colnames(nums)[which(nums[1,] != 'numeric')]
-
+    if(length(cati)!=0){
     resptab = plyr::ldply(dff[which(colnames(dff)%in%cati)], function(x)
       t(rbind(names(table(
         x
@@ -85,6 +87,15 @@ PXS = function(df,
 
     colnames(resptab) = c('Var', 'Response', 'N','VR')
     resptab$Response=as.character(resptab$Response)
+    }
+
+    nums= colnames(nums)[which(nums[1,] == 'numeric')]
+    if(length(nums)!=0){
+      resptab2=cbind(nums,nrow(dff),nrow(dff),nums)
+      colnames(resptab2)=c('Var', 'Response', 'N','VR')
+    }
+
+    resptab=rbind(resptab,resptab2)
     return(resptab)
   }
 
@@ -166,7 +177,7 @@ PXS = function(df,
   ################
   #stepwise procedure
 
-  dfB = df[which(df$ID %in% IDB), ]
+  dfB = df[which(df$ID %in% IDB), c(which(colnames(df) %in% c('PHENO', cov, M)))]
 
   if (length(removes) != 0) {
     print('excluding individuals...')
@@ -295,7 +306,13 @@ PXS = function(df,
 
   templength=nrow(C_temp)
   for(s in sig){
-    id <- which(!(C_temp[,which(colnames(C_temp)%in%s)] %in% levels(droplevels(B_temp[,which(colnames(B_temp)%in%s)]))))
+    if(data.class(B_temp[,which(colnames(B_temp)%in%s)])=='factor'){
+      id <- which(!(C_temp[,which(colnames(C_temp)%in%s)] %in% levels(droplevels(B_temp[,which(colnames(B_temp)%in%s)]))))
+    }
+    if(data.class(B_temp[,which(colnames(B_temp)%in%s)])=='character'){
+      id <- which(!(C_temp[,which(colnames(C_temp)%in%s)] %in% unique(B_temp[,which(colnames(B_temp)%in%s)])))
+    }
+
     if(length(id)!=0){
       C_temp=C_temp[-id,]
     }
