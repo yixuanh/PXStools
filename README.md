@@ -50,10 +50,10 @@ set.seed(7)
 
 COV=colnames(CONT_DF)[2:5] #covariate names
 XVAR=colnames(CONT_DF)[16:48] #exposure names
-REM='B' #remove the response 'B' from our analysis 
+REM='L' #remove the response 'L' from our analysis 
 
 #randomly sort data into three equal sized group, group C will contain individuals with a final predicted PXS
-ss <- sample(1:3,size=nrow(CONT_DF),replace=TRUE,prob=c(1/3,1/3,1/3))
+ss <- sample(1:3,size=nrow(CONT_DF),replace=TRUE,prob=c(1/5,1/5,3/5))
 id_A<-CONT_DF$ID[ss==1]
 id_B<-CONT_DF$ID[ss==2]
 id_C<-CONT_DF$ID[ss==3]
@@ -63,13 +63,13 @@ Run XWAS:
 ```R
 XWAS_results=xwas(df=CONT_DF,X=XVAR,cov = COV,mod = 'lm',IDA = id_A,removes = REM)
 head(XWAS_results)
-#       Estimate Std..Error   t.value      Pr...t.. nrow.stored.           fdr
-#VAR_1 501.99790   18.86722 26.606885 4.129432e-130         1661 7.391683e-128
-#VAR_2 270.70631   24.82412 10.904970  8.711046e-27         1661  1.376345e-24
-#VAR_3  71.63699   26.65408  2.687656  7.267780e-03         1661  1.000000e+00
-#VAR_4  93.61497   25.91737  3.612055  3.128642e-04         1661  4.724249e-02
-#VAR_5  55.64746   26.38567  2.109003  3.509444e-02         1661  1.000000e+00
-#VAR_6 446.23995   20.25330 22.032946  1.570251e-94         1661  2.795047e-92
+#          Estimate    Std..Error   t.value      Pr...t..     nrow.stored.           fdr
+# VAR_1	   493.86983	   25.00103	    19.753983	 2.975498e-73	     982	          6.189037e-71
+# VAR_2	   266.26276	   32.41371	    8.214511	  6.770669e-16	     982	          1.279656e-13
+# VAR_3	   74.47888	    34.42183    	2.163710	  3.073039e-02     	982	          1.000000e+00
+# VAR_4	   78.78474	    34.90476	    2.257134	  2.422168e-02     	982	          1.000000e+00
+# VAR_5	   35.32911   	 34.42199	    1.026353	  3.049814e-01     	982           1.000000e+00
+# VAR_6	   479.30374	   25.70496	   18.646355	  1.517820e-66     	982           3.141887e-64
 
 #obtain significant X's
 sigx=row.names(XWAS_results)[which(XWAS_results$fdr<0.05)]
@@ -77,8 +77,7 @@ sigx[12:length(sigx)]=substr(sigx[12:length(sigx)],1,nchar(sigx[12:length(sigx)]
 sigx=unique(sigx)
 
 sigx
-# [1] "VAR_1"  "VAR_2"  "VAR_4"  "VAR_6"  "VAR_8"  "VAR_9"  "VAR_10" "VAR_14" "VAR_16" "VAR_17"
-# [11] "VAR_18" "VAR_22" "VAR_25"
+#[1] "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_14"  "VAR_16"  "VAR_17"  "VAR_18"  "VAR_22C" "VAR_22"  "VAR_25" 
 
 ```
 Visualize results from XWAS: 
@@ -86,40 +85,77 @@ Visualize results from XWAS:
 manhattan_xwas(xdff = XWAS_results,pval = 'fdr',thresh = 0.05) #plots p values on -log10 scale
 plot_coeff_xwas(xdff = XWAS_results,pval = 'fdr',coeff='Estimate',thresh = 0.05) #plots coefficients of signficant results, set all=TRUE to plot all results
 ```
-![Untitled 3 001](https://user-images.githubusercontent.com/54297194/140362768-f24f7990-0e37-47b4-91ea-675f62d64bec.png)
+![image](https://user-images.githubusercontent.com/54297194/146267701-afa47654-6b01-4c86-bc43-42f747c27d38.png)
 
- 
 Run PXS (with only signficant exposures): 
 ```R
 PXSS=PXS(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
 
-# "intiating PXS procedure with 13 variables"
-# "excluding individuals..."
-# "1019 individuals remain"
-# "transformed responsetab"
-# "LASSO step initiating..."
-# "cross validated LASSO complete"
-# "the  min lamda  is: 0.0311043365158031"
-# "12 variables remain after LASSO"
-# "excluding individuals..."
-# "74 individuals remain"
-# "3 remain after FS iteration 1"
-3 remain after final FS iteration, they are:  VAR_22 VAR_25 VAR_9 
-# "0 individuals removed due to factor having a new level"
+[1] "intiating PXS procedure with 13 variables"
+[1] "excluding individuals..."
+[1] "914 individuals remain"
+[1] "transformed responsetab"
+[1] "LASSO step initiating..."
+[1] "cross validated LASSO complete"
+[1] "the  min lamda  is: 0.021807607315826"
+[1] "11 variables remain after LASSO"
+[1] "excluding individuals..."
+[1] "930 individuals remain"
+[1] "8 remain after FS iteration 1"
+8 remain after final FS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_2 VAR_6 VAR_8 VAR_10 VAR_17 
+[1] "0 individuals removed due to factor having a new level"
 
 nrow(PXSS) #number of individuals with PXS
-# 1026  
+# 2831  
 
 head(PXSS)
-#      ID    SEX AGE COV_Q_OTHER COV_C_OTHER        VAR_9 VAR_22 VAR_25 PHENO     pred
-# 7  3976   MALE  66    1.470289  CATEGORY_2  0.018172056      G      C   102 94.68780
-# 10  947 FEMALE  42   11.257224  CATEGORY_4  0.018919003      G      Q    87 97.59953
-# 15 3605 FEMALE  46   14.650950  CATEGORY_1  0.012576732      D      K    89 83.15233
-# 17 3979   MALE  62    8.133292  CATEGORY_2 -0.002686714      E      D    91 97.28691
-# 21 3243   MALE  45    9.615657  CATEGORY_2 -0.018024730      K      I    87 94.38959
-# 27 4345   MALE  47    1.258407  CATEGORY_4 -0.009366692      D      A    69 74.13231
+#   ID    SEX AGE COV_Q_OTHER COV_C_OTHER      PC_1      PC_2       PC_3      PC_4        VAR_1         VAR_2        VAR_6         VAR_8
+# 4572 FEMALE  47    7.738711  CATEGORY_5 1.2674114 0.9203929  2.6974477 0.9914804  0.003945463 -0.0007426558 -0.009524965 -0.0007623313
+# 2754   MALE  44   15.349081  CATEGORY_5 0.5550317 0.9852589 -2.4922787 2.0085929 -0.005833392 -0.0070134080  0.018185588 -0.0192416176
+# 2678   MALE  45   15.081943  CATEGORY_4 0.5632954 1.1129693 -1.5017750 2.6902221 -0.004395898 -0.0047589039  0.009265629 -0.0152872580
+# 3064   MALE  50    5.657369  CATEGORY_3 0.1701464 0.9345670  0.5661696 1.1395434 -0.001120768  0.0061214494 -0.007926178  0.0099030477
+# 3976   MALE  66    1.470289  CATEGORY_2 1.1001742 0.4358340  0.8061108 1.1374945  0.012189827  0.0047791377  0.003133365  0.0117178749
+# 4364 FEMALE  48   16.530377  CATEGORY_1 0.9128850 1.3486736  0.5913076 0.3542070 -0.036801092 -0.0207197737 -0.011525390  0.0050126760
+
+#  VAR_10       VAR_17       VAR_22 VAR_25 PHENO     pred       
+# -0.02206128 -0.028053092      C      B    95    115.59746
+# -0.04251531  0.004848575      D      C    77    81.76173
+#  0.00294643  0.018504878      C      B    95    116.12381
+#  0.03748063  0.012897271      E      B   116    112.76533
+# -0.01354368 -0.017855771      G      C   102    93.17732
+# -0.01347574 -0.001232650      D      C    79    77.85163
 ```
-     
+If you would like to consider interactions in calculate PXS, please use the PXSgl function instead:
+```R
+PXSinter=PXSgl(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5,fold=5)
+ 
+# "intiating group lasso PXS procedure with 13 variables"
+# "excluding individuals..."
+# "914 individuals remain"
+# "cross validation with 5 folds"
+# "the  min lamda  is: 0.0050374302730364"
+# "recalibrating model in group B..."
+# "excluding individuals..."
+# "3761 individuals remain"
+
+nrow(PXSinter) #number of individuals with PXS
+# 2831
+
+head(PXSinter)
+#    ID    SEX AGE COV_Q_OTHER COV_C_OTHER      PC_1      PC_2       PC_3      PC_4        VAR_1         VAR_2        VAR_6         VAR_8
+# 4572 FEMALE  47    7.738711  CATEGORY_5 1.2674114 0.9203929  2.6974477 0.9914804  0.003945463 -0.0007426558 -0.009524965 -0.0007623313
+# 2754   MALE  44   15.349081  CATEGORY_5 0.5550317 0.9852589 -2.4922787 2.0085929 -0.005833392 -0.0070134080  0.018185588 -0.0192416176
+# 2678   MALE  45   15.081943  CATEGORY_4 0.5632954 1.1129693 -1.5017750 2.6902221 -0.004395898 -0.0047589039  0.009265629 -0.0152872580
+# 3064   MALE  50    5.657369  CATEGORY_3 0.1701464 0.9345670  0.5661696 1.1395434 -0.001120768  0.0061214494 -0.007926178  0.0099030477
+# 3976   MALE  66    1.470289  CATEGORY_2 1.1001742 0.4358340  0.8061108 1.1374945  0.012189827  0.0047791377  0.003133365  0.0117178749
+# 4364 FEMALE  48   16.530377  CATEGORY_1 0.9128850 1.3486736  0.5913076 0.3542070 -0.036801092 -0.0207197737 -0.011525390  0.0050126760
+         VAR_9      VAR_10       VAR_14       VAR_16       VAR_17 VAR_22 VAR_25 PHENO      pred
+#  0.014674896 -0.02206128  0.028193331 -0.003030358 -0.028053092      C      B    95 115.34940
+#  0.010574598 -0.04251531 -0.004591859 -0.021717874  0.004848575      D      C    77  86.25764
+# -0.037871902  0.00294643 -0.073432151 -0.015424781  0.018504878      C      B    95 124.16328
+# -0.001291723  0.03748063  0.002486285  0.009385328  0.012897271      E      B   116 106.97016
+#  0.018172056 -0.01354368  0.030513644 -0.002688886 -0.017855771      G      C   102  89.48601
+# -0.010092473 -0.01347574 -0.010005814 -0.007991927 -0.001232650      D      C    79  79.16278
 
 
 
