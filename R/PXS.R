@@ -14,6 +14,7 @@
 #' @param removes any exposure response to remove from XWAS, in the form of a list
 #' @param fdr whether or not to adjust for multiple hypothesis correctin
 #' @param intermediate whether or not to save intermediate files
+#' @param folds number of folds for LASSO CV, default is 10
 
 #' @export
 #'
@@ -31,6 +32,7 @@ PXS = function(df,
                IDB,
                IDC,
                seed,
+               folds=10,
                removes = NULL,
                intermediate = F) {
 
@@ -56,12 +58,18 @@ PXS = function(df,
       colnames(keep)[one],
       'has only one unique value, please double check or remove.'
     ))
+    stop()
   }
 
   if (length(removes) != 0) {
     print('excluding individuals...')
     b=apply(keep, 1, function(r) any(r %in% removes))
-    keep=keep[-which(b==TRUE),]
+    if(length(which(b==TRUE))!=0){
+      keep=keep[-which(b==TRUE),]
+    }
+    else{
+      print('no responses to remove')
+    }
   }
   keep = na.omit(keep)
   print(paste(nrow(keep),'individuals remain'))
@@ -118,13 +126,13 @@ PXS = function(df,
 
   print('LASSO step initiating...')
   if (mod == 'lm') {
-    cv_output <- glmnet::cv.glmnet(x_vars, y_var)
+    cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds,)
     best_lamb <- cv_output$lambda.min
     print ('cross validated LASSO complete')
   }
 
   if (mod == 'logistic') {
-    cv_output <- glmnet::cv.glmnet(x_vars, y_var, family = "binomial")
+    cv_output <- glmnet::cv.glmnet(x_vars, y_var, nfolds=folds, family = "binomial")
     best_lamb <- cv_output$lambda.min
     print ('cross validated LASSO complete')
   }
@@ -135,7 +143,7 @@ PXS = function(df,
     y_var=as.matrix(y_var)
     x_vars = model.matrix(keep$PHENO ~ ., keep[, -which(colnames(keep)%in%c('PHENO', 'TIME'))])
 
-    cv_output <- glmnet::cv.glmnet(x_vars, y_var,family='cox')
+    cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds,family='cox')
     best_lamb<-cv_output$lambda.min
     print (paste('cross validated LASSO complete'))
 
@@ -182,7 +190,12 @@ PXS = function(df,
   if (length(removes) != 0) {
     print('excluding individuals...')
     b=apply(dfB, 1, function(r) any(r %in% removes))
-    dfB=dfB[-which(b==TRUE),]
+    if(length(which(b==TRUE))!=0){
+      dfB=dfB[-which(b==TRUE),]
+    }
+    else{
+      print('no responses to remove')
+    }
     print(paste(nrow(dfB),'individuals remain'))
 
   }
