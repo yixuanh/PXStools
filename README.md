@@ -13,7 +13,7 @@ devtools::install_github("yixuanh/PXStools")
 ```
 
 ## Functions
-The package contains four functions: 
+The package contains five functions: 
 
 ``xwas`` :conduct an exposure-wide association study (XWAS) across given exposure for a single phenotype. Please refer to https://doi.org/10.1371/journal.pone.0010746 for more details.
 
@@ -22,6 +22,8 @@ The package contains four functions:
 ``manhattan_xwas`` : plots the p values from the XWAS results on a -log scale. Be careful fof any associations that have a p value of close to zero as that will approach infinity in the -log scale. 
 
 ``PXS`` : conducts the LASSO-based selection procedure on a set of given exposures to build a poly-exposure risk score for a single phenotype. It is recommended that the inputed exposures for ``PXS`` are the signficant associations from the XWAS to minimize sample loss. 
+
+``PXSgl`` : conducts group LASSO-based procedure on a set of given exposures to build a poly-exposure risk score for a single phenotype. It is recommended that the inputed exposures for ``PXSgl`` are the signficant associations from the XWAS to minimize sample loss. 
 
 ## Options 
 In both the ``xwas`` and ``PXS`` functions, the user can input any set of exposures of interest. It is also possible to run different types of regression analysis including ``lm`` for linear models, ``logistic`` for binary phenotypes, and ``cox`` for cox regression. The user can choose a set of covariates to adjust for at each stage of the analysis as well as which exposure factors to remove from the analysis. 
