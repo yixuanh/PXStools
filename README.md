@@ -91,19 +91,19 @@ Run PXS (with only signficant exposures):
 ```R
 PXSS=PXS(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
 
-[1] "intiating PXS procedure with 13 variables"
-[1] "excluding individuals..."
-[1] "914 individuals remain"
-[1] "transformed responsetab"
-[1] "LASSO step initiating..."
-[1] "cross validated LASSO complete"
-[1] "the  min lamda  is: 0.021807607315826"
-[1] "11 variables remain after LASSO"
-[1] "excluding individuals..."
-[1] "930 individuals remain"
-[1] "8 remain after FS iteration 1"
-8 remain after final FS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_2 VAR_6 VAR_8 VAR_10 VAR_17 
-[1] "0 individuals removed due to factor having a new level"
+# "intiating PXS procedure with 13 variables"
+# "excluding individuals..."
+# "914 individuals remain"
+# "transformed responsetab"
+# "LASSO step initiating..."
+# "cross validated LASSO complete"
+# "the  min lamda  is: 0.021807607315826"
+# "11 variables remain after LASSO"
+# "excluding individuals..."
+# "930 individuals remain"
+# "8 remain after FS iteration 1"
+# 8 remain after final FS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_2 VAR_6 VAR_8 VAR_10 VAR_17 
+# "0 individuals removed due to factor having a new level"
 
 nrow(PXSS) #number of individuals with PXS
 # 2831  
