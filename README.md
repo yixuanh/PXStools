@@ -26,12 +26,12 @@ The package contains five functions:
 ``PXSgl`` : conducts group LASSO-based procedure on a set of given exposures to build a poly-exposure risk score for a single phenotype. It is recommended that the inputed exposures for ``PXSgl`` are the signficant associations from the XWAS to minimize sample loss. 
 
 ## Options 
-In both the ``xwas`` and ``PXS`` functions, the user can input any set of exposures of interest. It is also possible to run different types of regression analysis including ``lm`` for linear models, ``logistic`` for binary phenotypes, and ``cox`` for cox regression. The user can choose a set of covariates to adjust for at each stage of the analysis as well as which exposure factors to remove from the analysis. 
+In ``xwas``, ``PXS``, and ``PXSgl`` functions, the user can input any set of exposures of interest. It is also possible to run different types of regression analysis including ``lm`` for linear models, ``logistic`` for binary phenotypes, and ``cox`` for cox regression. The user can choose a set of covariates to adjust for at each stage of the analysis as well as which exposure factors to remove from the analysis. 
 
 ## Requirements
 The input data frame must have the following columns: 
 
-``ID``: ID of indivduals in dataframe
+``ID``: ID of individuals in dataframe
 
 ``PHENO``: phenotype of interest (binary (0/1) or continuous)
 
