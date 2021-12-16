@@ -65,13 +65,13 @@ Run XWAS:
 ```R
 XWAS_results=xwas(df=CONT_DF,X=XVAR,cov = COV,mod = 'lm',IDA = id_A,removes = REM)
 head(XWAS_results)
-#       Estimate Std..Error   t.value     Pr...t.. nrow.stored.          fdr
-# VAR_1 493.86983   25.00103 19.753983 2.975498e-73          982 6.189037e-71
-# VAR_2 266.26276   32.41371  8.214511 6.770669e-16          982 1.279656e-13
-# VAR_3  74.47888   34.42183  2.163710 3.073039e-02          982 1.000000e+00
-# VAR_4  78.78474   34.90476  2.257134 2.422168e-02          982 1.000000e+00
-# VAR_5  35.32911   34.42199  1.026353 3.049814e-01          982 1.000000e+00
-# VAR_6 479.30374   25.70496 18.646355 1.517820e-66          982 3.141887e-64
+#      Estimate Std..Error   t.value     Pr...t.. nrow.stored.          fdr
+#VAR_1 493.86983   25.00103 19.753983 2.975498e-73          982 3.109396e-71
+#VAR_2 266.26276   32.41371  8.214511 6.770669e-16          982 6.738428e-15
+#VAR_3  74.47888   34.42183  2.163710 3.073039e-02          982 1.835043e-01
+#VAR_4  78.78474   34.90476  2.257134 2.422168e-02          982 1.581978e-01
+#VAR_5  35.32911   34.42199  1.026353 3.049814e-01          982 7.967639e-01
+#VAR_6 479.30374   25.70496 18.646355 1.517820e-66          982 1.057414e-64
 
 #obtain significant X's
 sigx=row.names(XWAS_results)[which(XWAS_results$fdr<0.05)]
@@ -79,7 +79,7 @@ sigx[12:length(sigx)]=substr(sigx[12:length(sigx)],1,nchar(sigx[12:length(sigx)]
 sigx=unique(sigx)
 
 sigx
-#[1] "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_14"  "VAR_16"  "VAR_17"  "VAR_18"  "VAR_22C" "VAR_22"  "VAR_25" 
+#[1] "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_14"  "VAR_16"  "VAR_17"  "VAR_18"  "VAR_22C" "VAR_22"  "VAR_25" "VAR_27"
 
 ```
 Visualize results from XWAS: 
@@ -93,18 +93,18 @@ Run PXS (with only signficant exposures):
 ```R
 PXSS=PXS(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
 
-# "intiating PXS procedure with 13 variables"
+# "intiating PXS procedure with 14 variables"
 # "excluding individuals..."
-# "914 individuals remain"
+# "878 individuals remain"
 # "transformed responsetab"
 # "LASSO step initiating..."
 # "cross validated LASSO complete"
-# "the  min lamda  is: 0.021807607315826"
-# "11 variables remain after LASSO"
+# "the  min lamda  is: 0.0344997632667358"
+# "12 variables remain after LASSO"
 # "excluding individuals..."
-# "930 individuals remain"
+# "887 individuals remain"
 # "8 remain after FS iteration 1"
-# 8 remain after final FS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_2 VAR_6 VAR_8 VAR_10 VAR_17 
+# 7 remain after final FS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_2 VAR_6 VAR_8 VAR_10 
 # "0 individuals removed due to factor having a new level"
 
 nrow(PXSS) #number of individuals with PXS
@@ -120,28 +120,28 @@ head(PXSS)
 # 4364 FEMALE  48   16.530377  CATEGORY_1 0.9128850 1.3486736  0.5913076 0.3542070 -0.036801092 -0.0207197737 -0.011525390  0.0050126760
 
 #  VAR_10       VAR_17       VAR_22 VAR_25 PHENO     pred       
-# -0.02206128 -0.028053092      C      B    95    115.59746
-# -0.04251531  0.004848575      D      C    77    81.76173
-#  0.00294643  0.018504878      C      B    95    116.12381
-#  0.03748063  0.012897271      E      B   116    112.76533
-# -0.01354368 -0.017855771      G      C   102    93.17732
-# -0.01347574 -0.001232650      D      C    79    77.85163
+# -0.02206128 -0.028053092      C      B    95    116.32022
+# -0.04251531  0.004848575      D      C    77    81.23129
+#  0.00294643  0.018504878      C      B    95    115.49744
+#  0.03748063  0.012897271      E      B   116    112.73135
+# -0.01354368 -0.017855771      G      C   102    93.73321
+# -0.01347574 -0.001232650      D      C    79    77.72974
 ```
 If you would like to consider interactions in calculate PXS, please use the PXSgl function instead:
 ```R
-PXSinter=PXSgl(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5,fold=5)
+PXSinter=PXSgl(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
  
-# "intiating group lasso PXS procedure with 13 variables"
+# "intiating group lasso PXS procedure with 14 variables"
 # "excluding individuals..."
-# "914 individuals remain"
-# "cross validation with 5 folds"
-# "the  min lamda  is: 0.0050374302730364"
+# "878 individuals remain"
+# "cross validation with 10 folds"
+# "the  min lamda  is: 0.00561177934844416"
 # "recalibrating model in group B..."
 # "excluding individuals..."
-# "3761 individuals remain"
+# "3614 individuals remain"
 
 nrow(PXSinter) #number of individuals with PXS
-# 2831
+# 2727
 
 head(PXSinter)
 #    ID    SEX AGE COV_Q_OTHER COV_C_OTHER      PC_1      PC_2       PC_3      PC_4        VAR_1         VAR_2        VAR_6         VAR_8
@@ -151,13 +151,13 @@ head(PXSinter)
 # 3064   MALE  50    5.657369  CATEGORY_3 0.1701464 0.9345670  0.5661696 1.1395434 -0.001120768  0.0061214494 -0.007926178  0.0099030477
 # 3976   MALE  66    1.470289  CATEGORY_2 1.1001742 0.4358340  0.8061108 1.1374945  0.012189827  0.0047791377  0.003133365  0.0117178749
 # 4364 FEMALE  48   16.530377  CATEGORY_1 0.9128850 1.3486736  0.5913076 0.3542070 -0.036801092 -0.0207197737 -0.011525390  0.0050126760
-         VAR_9      VAR_10       VAR_14       VAR_16       VAR_17 VAR_22 VAR_25 PHENO      pred
-#  0.014674896 -0.02206128  0.028193331 -0.003030358 -0.028053092      C      B    95 115.34940
-#  0.010574598 -0.04251531 -0.004591859 -0.021717874  0.004848575      D      C    77  86.25764
-# -0.037871902  0.00294643 -0.073432151 -0.015424781  0.018504878      C      B    95 124.16328
-# -0.001291723  0.03748063  0.002486285  0.009385328  0.012897271      E      B   116 106.97016
-#  0.018172056 -0.01354368  0.030513644 -0.002688886 -0.017855771      G      C   102  89.48601
-# -0.010092473 -0.01347574 -0.010005814 -0.007991927 -0.001232650      D      C    79  79.16278
+#        VAR_9      VAR_10       VAR_14       VAR_16       VAR_18 VAR_22 VAR_25 VAR_27 PHENO      pred
+#  0.014674896 -0.02206128  0.028193331 -0.003030358 -0.021275163      C      B      J    95 117.08439
+#  0.010574598 -0.04251531 -0.004591859 -0.021717874  0.026210946      D      C      P    77  90.66943
+# -0.037871902  0.00294643 -0.073432151 -0.015424781  0.006503829      C      B      Q    95 125.55657
+# -0.001291723  0.03748063  0.002486285  0.009385328 -0.036010278      E      B      Y   116 119.09216
+#  0.018172056 -0.01354368  0.030513644 -0.002688886  0.010949063      G      C      U   102 100.76497
+# -0.010092473 -0.01347574 -0.010005814 -0.007991927 -0.031461808      D      C      Q    79  77.73137
 
 
 
