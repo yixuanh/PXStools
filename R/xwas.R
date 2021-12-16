@@ -27,13 +27,6 @@ xwas = function(df,
                 IDA,
                 removes = NULL,
                 fdr = TRUE) {
-  #data: data frame
-  #Xs: names of variables
-  #cov: name of covariates
-  #model: type of model (ie lm, logistic,cox)
-  #removes: exposure responses to remove (e.g. "Do not know")
-  #fdr: adds column with FDR adjusted p value
-  #plot: plots effect sizes of signficant assocations (FDR<0.05)
 
   `%notin%` <- Negate(`%in%`)
 
@@ -115,7 +108,7 @@ xwas = function(df,
 
   #FDR correction of p values
   if (fdr == TRUE) {
-    mat$fdr = p.adjust(mat[, ncol(mat)-1])
+    mat$fdr = p.adjust(mat[, ncol(mat)-1],method='fdr')
   }
 
   return(mat)
