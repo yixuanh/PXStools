@@ -9,7 +9,7 @@
 #' @param mod type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
 #' @param IDA list of IDs to include in XWAS
 #' @param removes any exposure response to remove from XWAS, in the form of a list
-#' @param fdr whether or not to adjust for multiple hypothesis correctin
+#' @param adjust method for adjusting for multiple comparison, see ?p.adjust to see other options
 #'
 #' @export
 #'
@@ -26,7 +26,7 @@ xwas = function(df,
                 mod,
                 IDA,
                 removes = NULL,
-                fdr = TRUE) {
+                adjust = 'BY') {
 
   `%notin%` <- Negate(`%in%`)
 
@@ -106,10 +106,7 @@ xwas = function(df,
 
   mat = data.frame(mat)
 
-  #FDR correction of p values
-  if (fdr == TRUE) {
-    mat$fdr = p.adjust(mat[, ncol(mat)-1],method='fdr')
-  }
+  mat$fdr = p.adjust(mat[, ncol(mat)-1],method=adjust)
 
   return(mat)
 }
