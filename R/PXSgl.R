@@ -130,6 +130,9 @@ PXSgl = function(df,
 
   keepBC = df[which(df$ID %in% c(IDB,IDC)), c(which(colnames(df) %in% c('ID','PHENO', catnames,contnames,cov)))]
 
+  if(mod=='cox'){
+    keepBC = df[which(df$ID %in% c(IDB,IDC)), c(which(colnames(df) %in% c('ID','PHENO','TIME', catnames,contnames,cov)))]
+  }
   if (length(removes) != 0) {
     print('excluding individuals...')
     b=apply(keepBC, 1, function(r) any(r %in% removes))
@@ -192,7 +195,7 @@ PXSgl = function(df,
   }
 
   if(mod%in%c('cox')){
-    f=as.formula(paste(cov,form_main,form_inter,sep='+'))
+    f=as.formula(paste('survival::Surv(TIME, PHENO)',paste(0,form_main,form_inter,sep='+'),sep='~'))
   }
 
   keepB <-keepBC[which(keepBC$ID%in%IDB),]
@@ -205,7 +208,7 @@ PXSgl = function(df,
     model=glm(f,data=keepB,family='binomial')
   }
   if(mod=='cox'){
-    model=survival::coxph(survival::Surv(TIME, PHENO)~0+f,data=keepB)
+    model=survival::coxph(f,data=keepB)
   }
 
   dfC <-keepBC[which(keepBC$ID%in%IDC),]
