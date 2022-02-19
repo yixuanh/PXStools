@@ -25,6 +25,10 @@ The package contains five functions:
 
 ``PXSgl`` : conducts group LASSO-based procedure on a set of given exposures to build a poly-exposure risk score for a single phenotype. It is recommended that the inputed exposures for ``PXSgl`` are the signficant associations from the XWAS to minimize sample loss. 
 
+``delta_pred`` : calculates the change in predictive power between two models, e.g. one with and without PXS. For linear mdoels, a change in R2 wil be reported; for logistic regression models, a change in AUC will be reported; for Cox regresison modelx, a change in C index will be reported. 
+
+conducts group LASSO-based procedure on a set of given exposures to build a poly-exposure risk score for a single phenotype. It is recommended that the inputed exposures for ``PXSgl`` are the signficant associations from the XWAS to minimize sample loss. 
+
 ## Options 
 In ``xwas``, ``PXS``, and ``PXSgl`` functions, the user can input any set of exposures of interest. It is also possible to run different types of regression analysis including ``lm`` for linear models, ``logistic`` for binary phenotypes, and ``cox`` for cox regression. The user can choose a set of covariates to adjust for at each stage of the analysis as well as which exposure factors to remove from the analysis. 
 
@@ -65,13 +69,13 @@ Run XWAS:
 ```R
 XWAS_results=xwas(df=CONT_DF,X=XVAR,cov = COV,mod = 'lm',IDA = id_A,removes = REM)
 head(XWAS_results)
-#      Estimate Std..Error   t.value     Pr...t.. nrow.stored.          fdr
-#VAR_1 493.86983   25.00103 19.753983 2.975498e-73          982 3.109396e-71
-#VAR_2 266.26276   32.41371  8.214511 6.770669e-16          982 6.738428e-15
-#VAR_3  74.47888   34.42183  2.163710 3.073039e-02          982 1.835043e-01
-#VAR_4  78.78474   34.90476  2.257134 2.422168e-02          982 1.581978e-01
-#VAR_5  35.32911   34.42199  1.026353 3.049814e-01          982 7.967639e-01
-#VAR_6 479.30374   25.70496 18.646355 1.517820e-66          982 1.057414e-64
+#       Estimate Std..Error   t.value     Pr...t.. nrow.stored.          fdr
+#VAR_1 494.19110   24.95760 19.801225 1.376340e-73          982 7.384411e-71
+#VAR_2 265.40248   32.29990  8.216821 6.619720e-16          982 3.382520e-14
+#VAR_3  74.70753   34.29551  2.178347 2.961965e-02          982 9.414615e-01
+#VAR_4  77.64219   34.79878  2.231175 2.589671e-02          982 8.683898e-01
+#VAR_5  35.98990   34.30748  1.049039 2.944205e-01          982 1.000000e+00
+#VAR_6 475.00995   25.62860 18.534368 6.504983e-66          982 2.326725e-63
 
 #obtain significant X's
 sigx=row.names(XWAS_results)[which(XWAS_results$fdr<0.05)]
@@ -79,7 +83,7 @@ sigx[12:length(sigx)]=substr(sigx[12:length(sigx)],1,nchar(sigx[12:length(sigx)]
 sigx=unique(sigx)
 
 sigx
-#[1] "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_14"  "VAR_16"  "VAR_17"  "VAR_18"  "VAR_22C" "VAR_22"  "VAR_25" "VAR_27"
+#[1] "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_14"  "VAR_16"  "VAR_17"  "VAR_18"  "VAR_22C" "VAR_22"  "VAR_25" 
 
 ```
 Visualize results from XWAS: 
@@ -93,40 +97,42 @@ Run PXS (with only signficant exposures):
 ```R
 PXSS=PXS(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
 
-# "intiating PXS procedure with 14 variables"
+# "intiating PXS procedure with 13 variables"
 # "excluding individuals..."
-# "878 individuals remain"
+# "914 individuals remain"
 # "transformed responsetab"
 # "LASSO step initiating..."
 # "cross validated LASSO complete"
-# "the  min lamda  is: 0.0344997632667358"
-# "12 variables remain after LASSO"
+# "the  min lamda  is: 0.0181050587125221"
+# "11 variables remain after LASSO"
 # "excluding individuals..."
-# "887 individuals remain"
+# "930 individuals remain"
 # "8 remain after FS iteration 1"
-# 7 remain after final FS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_2 VAR_6 VAR_8 VAR_10 
+# 8 remain after final FS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_2 VAR_6 VAR_8 VAR_10 VAR_17 
 # "0 individuals removed due to factor having a new level"
 
 nrow(PXSS) #number of individuals with PXS
 # 2831  
 
 head(PXSS)
-#   ID    SEX AGE COV_Q_OTHER COV_C_OTHER      PC_1      PC_2       PC_3      PC_4        VAR_1         VAR_2        VAR_6         VAR_8
-# 4572 FEMALE  47    7.738711  CATEGORY_5 1.2674114 0.9203929  2.6974477 0.9914804  0.003945463 -0.0007426558 -0.009524965 -0.0007623313
-# 2754   MALE  44   15.349081  CATEGORY_5 0.5550317 0.9852589 -2.4922787 2.0085929 -0.005833392 -0.0070134080  0.018185588 -0.0192416176
-# 2678   MALE  45   15.081943  CATEGORY_4 0.5632954 1.1129693 -1.5017750 2.6902221 -0.004395898 -0.0047589039  0.009265629 -0.0152872580
-# 3064   MALE  50    5.657369  CATEGORY_3 0.1701464 0.9345670  0.5661696 1.1395434 -0.001120768  0.0061214494 -0.007926178  0.0099030477
-# 3976   MALE  66    1.470289  CATEGORY_2 1.1001742 0.4358340  0.8061108 1.1374945  0.012189827  0.0047791377  0.003133365  0.0117178749
-# 4364 FEMALE  48   16.530377  CATEGORY_1 0.9128850 1.3486736  0.5913076 0.3542070 -0.036801092 -0.0207197737 -0.011525390  0.0050126760
-
-#  VAR_10       VAR_17       VAR_22 VAR_25 PHENO     pred       
-# -0.02206128 -0.028053092      C      B    95    116.32022
-# -0.04251531  0.004848575      D      C    77    81.23129
-#  0.00294643  0.018504878      C      B    95    115.49744
-#  0.03748063  0.012897271      E      B   116    112.73135
-# -0.01354368 -0.017855771      G      C   102    93.73321
-# -0.01347574 -0.001232650      D      C    79    77.72974
+#    ID    SEX AGE COV_Q_OTHER COV_C_OTHER        VAR_1         VAR_2        VAR_6         VAR_8      VAR_10       VAR_17 VAR_22 VAR_25 PHENO       PXS
+# 4572 FEMALE  47    7.738711  CATEGORY_5  0.003945463 -0.0007426558 -0.009524965 -0.0007623313 -0.02206128 -0.028053092      C      B    95 115.48074
+# 2754   MALE  44   15.349081  CATEGORY_5 -0.005833392 -0.0070134080  0.018185588 -0.0192416176 -0.04251531  0.004848575      D      C    77  82.13151
+# 2678   MALE  45   15.081943  CATEGORY_4 -0.004395898 -0.0047589039  0.009265629 -0.0152872580  0.00294643  0.018504878      C      B    95 116.52842
+# 3064   MALE  50    5.657369  CATEGORY_3 -0.001120768  0.0061214494 -0.007926178  0.0099030477  0.03748063  0.012897271      E      B   116 112.84812
+# 3976   MALE  66    1.470289  CATEGORY_2  0.012189827  0.0047791377  0.003133365  0.0117178749 -0.01354368 -0.017855771      G      C   102  93.11601
+# 4364 FEMALE  48   16.530377  CATEGORY_1 -0.036801092 -0.0207197737 -0.011525390  0.0050126760 -0.01347574 -0.001232650      D      C    79  77.92055
 ```
+Get the change in prediction between a model with just baseline covariates versus with the addition of PXS
+```R
+varsA=COV
+varsB=c(COV,'PXS')
+delta_pred(PXSS,varsA,varsB,'lm')
+# change in R2: 0.835 (0.821, 0.845)
+# first model R2:  0.001 (0.001, 0.007)
+# second model R2:  0.836 (0.824, 0.846)
+````
+
 If you would like to consider interactions in calculate PXS, please use the PXSgl function instead:
 ```R
 PXSinter=PXSgl(df=CONT_DF,X=sigx,cov=COV,removes = REM,mod = 'lm',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
