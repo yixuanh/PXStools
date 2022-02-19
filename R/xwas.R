@@ -18,6 +18,7 @@
 #' @import glmnet
 #' @import broom
 #' @import ggplot2
+#' @import logger
 
 
 xwas = function(df,
@@ -58,7 +59,7 @@ xwas = function(df,
 
     #skip if X only has one value
     if(nrow(unique(stored[ncol(stored)]))==1){
-      print(paste(colnames(stored)[ncol(stored)],'has only one value, skipped'))
+      log_warn(paste(colnames(stored)[ncol(stored)],'has only one value, skipped'))
       next
     }
 
@@ -75,7 +76,7 @@ xwas = function(df,
         survival::coxph(survival::Surv(TIME, PHENO) ~ 0 + ., data = stored)
     }
     if (mod %notin% c('cox', 'lm', 'logistic')) {
-      print('please specificy a regression model: linear, logsitic, or cox ')
+      log_warn('please specificy a regression model: linear, logsitic, or cox ')
     }
 
     #get index for which coeffs to extract

@@ -24,7 +24,7 @@
 #' @import broom
 #' @import ggplot2
 #' @import glinternet
-
+#' @import logger
 #'
 PXSgl = function(df,
                X,
@@ -43,7 +43,7 @@ PXSgl = function(df,
   set.seed(seed)
 
   #check to make sure each column has more than 1 unique value
-  print(paste('intiating group lasso PXS procedure with', length(X), 'variables'))
+  log_info(paste('intiating group lasso PXS procedure with', length(X), 'variables'))
 
   df[sapply(df, is.character)] <- lapply(df[sapply(df, is.character)],as.factor) #change all non-numeric columns to factor form
 
@@ -53,7 +53,7 @@ PXSgl = function(df,
   one = which(sapply(keep, function(x)
     length(unique(x)) > 1) == FALSE)
   if (length(one) != 0) {
-    print(paste(
+    log_warn(paste(
       colnames(keep)[one],
       'has only one unique value, please double check or remove.'
     ))
@@ -61,17 +61,17 @@ PXSgl = function(df,
   }
 
   if (length(removes) != 0) {
-    print('excluding individuals...')
+    log_info('excluding individuals...')
     b=apply(keep, 1, function(r) any(r %in% removes))
     if(length(which(b==TRUE))!=0){
       keep=keep[-which(b==TRUE),]
     }
     else{
-      print('no responses to remove')
+      log_info('no responses to remove')
     }
   }
   keep = na.omit(keep)
-  print(paste(nrow(keep),'individuals remain'))
+  log_info(paste(nrow(keep),'individuals remain'))
 
   ###GROUP LASSO WITH GLINTERNET
   #code adapted from tutorial https://strakaps.github.io/post/glinternet/
@@ -88,7 +88,7 @@ PXSgl = function(df,
   # make the categorical variables take integer values starting from 0
   X[, !i_num] <- apply(X[, !i_num], 2, function(col) as.integer(as.factor(col)) - 1)
 
-  print(paste('cross validation with',folds,'folds'))
+  log_info(paste('cross validation with',folds,'folds'))
 
   if(mod %in% c('cox','logistic')){
     cv_fit <- glinternet::glinternet.cv(X,Y, nFolds =  folds,numLevels,family='binomial')
@@ -98,7 +98,7 @@ PXSgl = function(df,
   }
 
   lamb <- which.min(cv_fit$cvErr) #picking lambda with min error
-  print(paste('the  min lamda  is:', cv_fit$lambda[lamb]))
+  log_info(paste('the  min lamda  is:', cv_fit$lambda[lamb]))
 
   coefs <- coef(cv_fit$glinternetFit)[[lamb]]
 
@@ -117,7 +117,7 @@ PXSgl = function(df,
   }
 
   if(length(catnames) ==0 & length(contnames)==0){
-    print ('group lasso did not select any variables, procedure terminated')
+    log_warn ('group lasso did not select any variables, procedure terminated')
     stop()
   }
 
@@ -126,7 +126,7 @@ PXSgl = function(df,
 
   ##################
   ## re-calibrate in group B
-  print('recalibrating model in group B...')
+  log_info('recalibrating model in group B...')
 
   keepBC = df[which(df$ID %in% c(IDB,IDC)), c(which(colnames(df) %in% c('ID','PHENO', catnames,contnames,cov)))]
 
@@ -134,22 +134,22 @@ PXSgl = function(df,
     keepBC = df[which(df$ID %in% c(IDB,IDC)), c(which(colnames(df) %in% c('ID','PHENO','TIME', catnames,contnames,cov)))]
   }
   if (length(removes) != 0) {
-    print('excluding individuals...')
+    log_info('excluding individuals...')
     b=apply(keepBC, 1, function(r) any(r %in% removes))
     if(length(which(b==TRUE))!=0){
       keepBC=keepBC[-which(b==TRUE),]
     }
     else{
-      print('no responses to remove')
+      log_info('no responses to remove')
     }
   }
   keepBC = na.omit(keepBC)
-  print(paste(nrow(keepBC),'individuals remain'))
+  log_info(paste(nrow(keepBC),'individuals remain'))
 
   one = which(sapply(keepBC, function(x)
     length(unique(x)) > 1) == FALSE)
   if (length(one) != 0) {
-    print(paste(
+    log_warn(paste(
       colnames(keepBC)[one], #####may need to only have just one here not this whole thing
       'has only one unique value, removed in calibration step.'
     ))
