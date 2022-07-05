@@ -1,5 +1,5 @@
 #' @title PXSgl
-#' @description  this function builds a polyexposure risk score considering interactions between exposures using the group lasso method
+#' @description  this function builds a polyexposure risk score with consideration of pairwise  interactions between exposures using the group lasso method
 #' @source
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
 

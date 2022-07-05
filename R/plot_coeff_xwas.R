@@ -18,7 +18,7 @@
 #' @import broom
 #' @import ggplot2
 
-plot_coeff_xwas = function(xdff, pval, coeff, thresh = 0.05,all=FALSE) {
+plot_coeff_xwas = function(xdff, pval, coeff, thresh = 0.05,all=FALSE,ang=90,va=0.5,ha=1) {
 
   if(all==TRUE){
     xdf=xdff
@@ -34,9 +34,9 @@ plot_coeff_xwas = function(xdff, pval, coeff, thresh = 0.05,all=FALSE) {
     ggplot2::ylab('Effect Size') +
     ggplot2::xlab('Exposure') +
     ggplot2::theme(axis.text.x = ggplot2::element_text(
-      angle = 90,
-      vjust = 0.5,
-      hjust = 1
+      angle = ang,
+      vjust = va,
+      hjust = ha
     ))
   return(gg)
 }

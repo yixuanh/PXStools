@@ -14,7 +14,10 @@
 #' @param removes any exposure response, categorical or numerical, to remove from the analysis This should be in the form of a list
 #' @param fdr whether or not to adjust for multiple hypothesis correction
 #' @param intermediate whether or not to save intermediate files
-#' @param folds number of folds for LASSO CV, default is 10
+#' @param folds number of folds for glmnet cross validaton, default is 10
+#' @param alph the alpha value used in glmnet, alpha = 1 is assumed by default (lasso),
+#' setting alpha = 0 for ridge, and anything in between 0 and 1 for elastic net.
+#' please refer to glmnet documentation for more details
 
 #' @export
 #'
@@ -33,6 +36,7 @@ PXS = function(df,
                IDB,
                IDC,
                seed,
+               alph=1,
                folds=10,
                removes = NULL,
                intermediate = F) {
@@ -115,11 +119,11 @@ PXS = function(df,
   rt=rt[-which(rt$N==0),]
   }
 
-  #############
-  #LASSO
+  ##REGULARIZATION
+  ############
 
   x_vars = model.matrix(keep$PHENO ~ ., keep[, -(which(colnames(keep) ==
-                                                         'PHENO'))]) ##change here#####
+                                                           'PHENO'))]) ##change here#####
 
   y_var = keep$PHENO
 
@@ -127,13 +131,13 @@ PXS = function(df,
 
   log_info('LASSO step initiating...')
   if (mod == 'lm') {
-    cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds,)
+    cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,)
     best_lamb <- cv_output$lambda.min
     log_info ('cross validated LASSO complete')
   }
 
   if (mod == 'logistic') {
-    cv_output <- glmnet::cv.glmnet(x_vars, y_var, nfolds=folds, family = "binomial")
+    cv_output <- glmnet::cv.glmnet(x_vars, y_var, nfolds=folds, alpha=alph, family = "binomial")
     best_lamb <- cv_output$lambda.min
     log_info ('cross validated LASSO complete')
   }
@@ -144,7 +148,7 @@ PXS = function(df,
     y_var=as.matrix(y_var)
     x_vars = model.matrix(keep$PHENO ~ ., keep[, -which(colnames(keep)%in%c('PHENO', 'TIME'))])
 
-    cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds,family='cox')
+    cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,family='cox')
     best_lamb<-cv_output$lambda.min
     log_info (paste('cross validated LASSO complete'))
 
@@ -153,13 +157,13 @@ PXS = function(df,
   log_info(paste('the  min lamda  is:', best_lamb))
 
   if(mod=='lm'){
-    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb)
+    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,)
   }
   if(mod=='logistic'){
-    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb,family = "binomial")
+    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,family = "binomial")
   }
   if(mod=='cox'){
-    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb,family='cox')
+    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,family='cox')
 
   }
   if (intermediate == TRUE) {
@@ -181,12 +185,13 @@ PXS = function(df,
     log_info(paste(length(M), 'variables remain after LASSO'))
   }
 
-
-
   ################
   #stepwise procedure
-
   dfB = df[which(df$ID %in% IDB), c(which(colnames(df) %in% c('PHENO', cov, M)))]
+
+  if(mod=='cox'){
+    dfB = df[which(df$ID %in% IDB), c(which(colnames(df) %in% c('PHENO', 'TIME',cov, M)))]
+  }
 
   if (length(removes) != 0) {
     log_info('excluding individuals...')
