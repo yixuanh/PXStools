@@ -30,7 +30,8 @@ The package contains five functions:
 conducts group LASSO-based procedure on a set of given exposures to build a poly-exposure risk score for a single phenotype. It is recommended that the inputed exposures for ``PXSgl`` are the signficant associations from the XWAS to minimize sample loss. 
 
 ## Options 
-In ``xwas``, ``PXS``, and ``PXSgl`` functions, the user can input any set of exposures of interest. It is also possible to run different types of regression analysis including ``lm`` for linear models, ``logistic`` for binary phenotypes, and ``cox`` for cox regression. The user can choose a set of covariates to adjust for at each stage of the analysis as well as which exposure factors to remove from the analysis. 
+In ``xwas``, ``PXS``, and ``PXSgl`` functions, the user can input any set of exposures of interest. It is also possible to run different types of regression analysis including ``lm`` for linear models, ``logistic`` for binary phenotypes, and ``cox`` for cox regression. The user can choose a set of covariates (``cov``) to adjust for at each stage of the analysis as well as which exposure factors to remove (``removes``) from the analysis. In ``PXS``, the type of regularization (LASSO, elastic net, or ridge regression) can be specificied with ``alph`` parameter. Additional documentation for function parameters are described below.
+
 
 ## Requirements
 The input data frame must have the following columns: 
@@ -45,10 +46,125 @@ if running survival analysis, it must also have
 
 In addition to the the final prediction group, two other groups are needed to train the model. 
 
-## Example
+## Parameter Descriptions
+``xwas()``: conducts exposure wide univariate associations between the phenotype of interest and a set of exposures. 
+
+*df* the data frame input
+
+*X* column name of exposure variables to run XWAS
+
+*cov* column name of covariates
+
+*mod* type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
+
+*IDA* list of IDs to include in XWAS
+
+*removes* any exposure response, categorical or numerical, to remove from XWAS. This should be in the form of a list
+
+*adjust* method for adjusting for multiple comparison, see ?p.adjust to see other options
+_________
+
+``manhattan_xwas()``: plots the p values of the XWAS results, analogous to a GWAS manhattan plot. Note: since the y axis is in the -log scale, there may be issues with plotting if the p value is zero or very close to zero (taking the neg log of it will be infinite)
+
+*xdff*  matrix returned from XWAS function, row names of matrix should be the X variables
+
+*pval* column name of p value
+
+*thresh* p value threshold for significance
+
+*angle* rotation of x axis labels. please refer to ggplot2 manual for more detailed description
+
+*va* vertical adjustment of x axis labels. please refer to ggplot2 manual for more detailed description
+
+*ha* horizontal adjustment of x axis labels. please refer to ggplot2 manual for more detailed description
+
+*size* text size of x axis labels. please refer to ggplot2 manual for more detailed description
+_________
+
+``plot_coeff_xwas()``: plots the coefficients of XWAS results
+
+*xdff*  matrix returned from XWAS function, rownames of matrix should be the X variables
+
+*pval* column name of p value
+
+*coeff* column name of coefficients
+
+*thresh* p value threshold for signficance
+
+*all* default is to plot only signficant associaitons, all=TRUE plots all associatons
+_________
+
+``PXS()``: builds a polyexposure risk score
+
+*df* the data frame input
+
+*X* column name of significant exposure variables from XWAS
+
+*cov* column name of covariates
+
+*mod* type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
+
+*IDA* list of IDs to from XWAS procedure
+
+*IDB* list of IDs for testing set
+
+*IDC* list of IDs in the final prediction set
+
+*seed* setting a seed
+
+*removes* any exposure response, categorical or numerical, to remove from the analysis. This should be in the form of a list
+
+*fdr* whether or not to adjust for multiple hypothesis correction
+
+*intermediate* whether or not to save intermediate files
+
+*folds* number of folds for glmnet cross validation, default is 10
+
+*alph* the alpha value used in glmnet, alpha = 1 is assumed by default (lasso), setting alpha = 0 for ridge, and anything in between 0 and 1 for elastic net. please refer to glmnet documentation for more details
+_________
+
+``PXSgl()``: builds a polyexposure risk score with consideration of pairwise interactions between exposures using the group lasso method 
+
+*df* the data frame input
+
+*X* column name of significant exposure variables from XWAS
+
+*cov* column name of covariates
+
+*mod* type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
+
+*IDA* list of IDs to from XWAS procedure
+
+*IDB* list of IDs for testing set
+
+*IDC* list of IDs in the final prediction set
+
+*seed* setting a seed
+
+*removes* any exposure response, categorical or numerical, to remove from the analysis This should be in the form of a list
+
+*fdr* whether or not to adjust for multiple hypothesis correction
+
+*intermediate* whether or not to save intermediate files
+
+*folds* number of folds for the cross validation step, default is 10
+_________
+
+``delta_pred()``: calculates the change in predictive ability between two models. For linear models, a change in R2 wil be reported; for logistic regression models, a change in AUC will be reported; for Cox regresison models, a change in C index will be reported. The column name of the Y variable must be "PHENO". For Cox regression models, the time to event column name must be "TIME".
+
+*df* the data frame input
+
+*xvarsA* column name of variables to include in first model
+
+*xvarsB* column name of variables to include in second  model
+
+*mod* type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
+
+*boot* number of bootstrap samples, default is 100
+
+## Example (Continuous Phenotype)
 
 This will be an example using the ``CONT_DF.RData`` dataset provided in the package. The CONT_DF dataset contains the individual ID, sex, gender, continuous and categorical variables, and a continuous phenotype. We will use SEX, AGE, COV_Q_OTHER, and COV_C_OTHER, as our covariate. The initial set of exposures that we are interested in are VAR_1 through VAR_33. We will be using a linear model. 
-
 
 Store variable names: 
 ```R
@@ -79,17 +195,17 @@ head(XWAS_results)
 
 #obtain significant X's
 sigx=row.names(XWAS_results)[which(XWAS_results$fdr<0.05)]
-sigx[12:length(sigx)]=substr(sigx[12:length(sigx)],1,nchar(sigx[12:length(sigx)])-1) #remove levels and only keep name of variable
+sigx[11:length(sigx)]=substr(sigx[11:length(sigx)],1,nchar(sigx[11:length(sigx)])-1) #remove levels and only keep name of variable
 sigx=unique(sigx)
 
 sigx
-#[1] "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_14"  "VAR_16"  "VAR_17"  "VAR_18"  "VAR_22C" "VAR_22"  "VAR_25" 
+#[1] "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_14"  "VAR_16"  "VAR_17"  "VAR_18"  "VAR_22"  "VAR_25" 
 
 ```
 Visualize results from XWAS: 
 ```R
 manhattan_xwas(xdff = XWAS_results,pval = 'fdr',thresh = 0.05) #plots p values on -log10 scale
-plot_coeff_xwas(xdff = XWAS_results,pval = 'fdr',coeff='Estimate',thresh = 0.05) #plots coefficients of signficant results, set all=TRUE to plot all results
+plot_coeff_xwas(xdff = XWAS_results,pval = 'fdr',coeff='Estimate',thresh = 0.05) #plots coefficients of significant results, set all=TRUE to plot all results
 ```
 ![image](https://user-images.githubusercontent.com/54297194/146267701-afa47654-6b01-4c86-bc43-42f747c27d38.png)
 
@@ -165,5 +281,45 @@ head(PXSinter)
 #  0.018172056 -0.01354368  0.030513644 -0.002688886  0.010949063      G      C      U   102 100.76497
 # -0.010092473 -0.01347574 -0.010005814 -0.007991927 -0.031461808      D      C      Q    79  77.73137
 
+## Example (Binary Phenotype)
+This will be an example using the ``BINARY_DF.RData`` dataset provided in the package. The BINARY_DF dataset contains the individual ID, sex, gender, continuous and categorical variables, a binary phenotype, and time to event data. We will use SEX, AGE, COV_Q_OTHER, and COV_C_OTHER, as our covariate. The initial set of exposures that we are interested in are VAR_1 through VAR_33. We will be using the logistic model. 
 
+```R
+set.seed(7)
+COV=colnames(BINARY_DF)[2:9] #covariate names
+XVAR=colnames(BINARY_DF)[16:50] #exposure names
+REM='L' #remove the response 'B' from our analysis 
+
+#randomly sort data into three equal sized group, group C will contain individuals with a final predicted PXS
+ss <- sample(1:3,size=nrow(BINARY_DF),replace=TRUE,prob=c(1/5,1/5,3/5))
+id_A<-BINARY_DF$ID[ss==1]
+id_B<-BINARY_DF$ID[ss==2]
+id_C<-BINARY_DF$ID[ss==3]
+```
+Run XWAS: 
+```R
+XWAS_results=xwas(df=BINARY_DF,X=XVAR,cov = COV,mod = 'logistic',IDA = id_A,removes = REM)
+head(XWAS_results)
+#        Estimate Std..Error    z.value     Pr...z.. nrow.stored.          fdr
+#VAR_1 66.8837233   5.362552 12.4723671 1.056406e-35          982 1.307498e-32
+#VAR_2 24.7163927   4.629661  5.3387043 9.361316e-08          982 1.655195e-05
+#VAR_3  5.7229386   4.568069  1.2528136 2.102736e-01          982 1.000000e+00
+#VAR_4 10.7767723   4.657384  2.3139112 2.067259e-02          982 8.822817e-01
+#VAR_5 -0.8885037   4.547791 -0.1953704 8.451030e-01          982 1.000000e+00
+#VAR_6 64.0887303   5.296899 12.0992930 1.065247e-33          982 6.592203e-31
+
+#obtain significant X's
+sigx=row.names(XWAS_results)[which(XWAS_results$fdr<0.05)]
+sigx[9:length(sigx)]=substr(sigx[9:length(sigx)],1,nchar(sigx[9:length(sigx)])-1) #remove levels and only keep name of variable
+sigx=unique(sigx)
+
+sigx
+# "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_18"  "VAR_22C" "VAR_22"  "VAR_25"
+```
+
+Visualize results from XWAS: 
+```R
+manhattan_xwas(xdff = XWAS_results,pval = 'fdr',thresh = 0.05) #plots p values on -log10 scale
+plot_coeff_xwas(xdff = XWAS_results,pval = 'fdr',coeff='Estimate',thresh = 0.05) #plots coefficients of significant results, set all=TRUE to plot all results
+![Untitled 4 001](https://user-images.githubusercontent.com/54297194/177419889-0fd5b6c4-c6d9-460b-856c-79824246404d.png)
 
