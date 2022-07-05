@@ -280,6 +280,7 @@ head(PXSinter)
 # -0.001291723  0.03748063  0.002486285  0.009385328 -0.036010278      E      B      Y   116 119.09216
 #  0.018172056 -0.01354368  0.030513644 -0.002688886  0.010949063      G      C      U   102 100.76497
 # -0.010092473 -0.01347574 -0.010005814 -0.007991927 -0.031461808      D      C      Q    79  77.73137
+```
 
 ## Example (Binary Phenotype)
 This will be an example using the ``BINARY_DF.RData`` dataset provided in the package. The BINARY_DF dataset contains the individual ID, sex, gender, continuous and categorical variables, a binary phenotype, and time to event data. We will use SEX, AGE, COV_Q_OTHER, and COV_C_OTHER, as our covariate. The initial set of exposures that we are interested in are VAR_1 through VAR_33. We will be using the logistic model. 
@@ -321,5 +322,104 @@ Visualize results from XWAS:
 ```R
 manhattan_xwas(xdff = XWAS_results,pval = 'fdr',thresh = 0.05) #plots p values on -log10 scale
 plot_coeff_xwas(xdff = XWAS_results,pval = 'fdr',coeff='Estimate',thresh = 0.05) #plots coefficients of significant results, set all=TRUE to plot all results
-![Untitled 4 001](https://user-images.githubusercontent.com/54297194/177419889-0fd5b6c4-c6d9-460b-856c-79824246404d.png)
+```
+![Untitled 4 001](https://user-images.githubusercontent.com/54297194/177420970-8d032bfb-174e-406a-8456-f4eee7b1b18f.jpeg)
 
+Run PXS (with only signficant exposures): 
+```R
+#PXSS=PXS(df=BINARY_DF,X=sigx,cov=COV,removes = REM,mod = 'logistic',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
+#intiating PXS procedure with 10 variables
+#excluding individuals...
+#914 individuals remain
+#transformed responsetab
+#LASSO initiating...
+#cross validation complete
+#the  min lamda  is: 0.00912641134021874
+#7 variables remain after regularization
+#excluding individuals...
+#930 individuals remain
+#5 remain after BackS iteration 1
+#5 remain after final BackS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_6 VAR_8
+#0 individuals removed due to factor having a new level
+```
+
+By default, PXS uses LASSO regularization. Elastic net or ridge regression can also be implemented by specifying the alpha value. As an example, we can rerun PXS with ridge regression:
+```R
+PXSS=PXS(df=BINARY_DF,X=sigx,cov=COV,removes = REM,mod = 'logistic',IDA = id_A,IDB = id_B,IDC = id_C,seed=5,alph=0)
+#intiating PXS procedure with 10 variables
+#excluding individuals...
+#914 individuals remain
+#transformed responsetab
+#ridge regression initiating...
+#cross validation complete
+#the  min lamda  is: 0.0313078739623684
+#9 variables remain after regularization
+#excluding individuals...
+#930 individuals remain
+#5 remain after BackS iteration 1
+#5 remain after final BackS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_6 VAR_8 
+#0 individuals removed due to factor having a new level
+```
+## Example (Survival Analysis)
+This will be an example using the ``BINARY_DF.RData`` dataset provided in the package. The BINARY_DF dataset contains the individual ID, sex, gender, continuous and categorical variables, a binary phenotype, and time to event data. We will use SEX, AGE, COV_Q_OTHER, and COV_C_OTHER, as our covariate. The initial set of exposures that we are interested in are VAR_1 through VAR_33. We will be using the logistic model. 
+
+```R
+set.seed(7)
+load('/Users/yixuanhe/Dropbox (HMS)/PATEL/R_Packages/PXStools/PXStools/data/BINARY_DF.RData')
+COV=colnames(BINARY_DF)[2:9] #covariate names
+XVAR=colnames(BINARY_DF)[16:50] #exposure names
+REM='L' #remove the response 'B' from our analysis 
+
+#randomly sort data into three equal sized group, group C will contain individuals with a final predicted PXS
+ss <- sample(1:3,size=nrow(BINARY_DF),replace=TRUE,prob=c(1/5,1/5,3/5))
+id_A<-BINARY_DF$ID[ss==1]
+id_B<-BINARY_DF$ID[ss==2]
+id_C<-BINARY_DF$ID[ss==3]
+```
+
+Run XWAS
+```R
+XWAS_results=xwas(df=BINARY_DF,X=XVAR,cov = COV,mod = 'cox',IDA = id_A,removes = REM)
+head(XWAS_results)
+
+#           coef    exp.coef. se.coef.          z     Pr...z.. nrow.stored.          fdr
+#VAR_1 27.877006 1.278880e+12 2.669075 10.4444442 1.553628e-25          982 1.922903e-22
+#VAR_2  8.728393 6.175793e+03 2.853299  3.0590533 2.220377e-03          982 2.217052e-01
+#VAR_3  5.004221 1.490409e+02 3.054618  1.6382478 1.013700e-01          982 1.000000e+00
+#VAR_4 10.088868 2.407353e+04 3.079373  3.2762737 1.051866e-03          982 1.446532e-01
+#VAR_5  1.307285 3.696126e+00 3.061649  0.4269873 6.693886e-01          982 1.000000e+00
+#VAR_6 27.202800 6.516670e+11 2.730609  9.9621720 2.231337e-23          982 9.205645e-21
+
+#obtain significant X's
+sigx=row.names(XWAS_results)[which(XWAS_results$fdr<0.05)]
+sigx[5:length(sigx)]=substr(sigx[5:length(sigx)],1,nchar(sigx[5:length(sigx)])-1) #remove levels and only keep name of variable
+sigx=unique(sigx)
+
+sigx
+#"VAR_1"  "VAR_6"  "VAR_10" "VAR_18" "VAR_22" "VAR_25"
+```
+
+Visualize results from XWAS: 
+```R
+manhattan_xwas(xdff = XWAS_results,pval = 'fdr',thresh = 0.05) #plots p values on -log10 scale
+plot_coeff_xwas(xdff = XWAS_results,pval = 'fdr',coeff='coef',thresh = 0.05) #plots coefficients of significant results, set all=TRUE to plot all results
+```
+![Untitled 4 001](https://user-images.githubusercontent.com/54297194/177424791-310418d5-f778-48e9-bcbe-69f1b85af5a3.jpeg)
+
+Build PXS:
+```R
+PXSS=PXS(df=BINARY_DF,X=sigx,cov=COV,removes = REM,mod = 'cox',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
+#intiating PXS procedure with 6 variables
+#excluding individuals...
+#914 individuals remain
+#transformed responsetab
+#LASSO initiating...
+#cross validated LASSO complete
+#the  min lamda  is: 0.026512783464246
+#5 variables remain after LASSO
+#excluding individuals...
+#930 individuals remain
+#4 remain after BackS iteration 1
+#4 remain after final BackS iteration, they are:  VAR_25 VAR_1 VAR_10 VAR_18 
+#0 individuals removed due to factor having a new level
+```
