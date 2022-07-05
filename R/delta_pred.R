@@ -5,11 +5,11 @@
 
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
 
-#' @param df the data frame inpt
+#' @param df the data frame input
 #' @param xvarsA column name of variables to include in first model
 #' @param xvarsB column name of variables to include in second  model
 #' @param mod type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
-#' @param boot number of boostrap samples, default is 100
+#' @param boot number of bootstrap samples, default is 100
 #' @export
 #'
 #' @importFrom magrittr %>%

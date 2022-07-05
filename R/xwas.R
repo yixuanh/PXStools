@@ -3,12 +3,12 @@
 
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
 
-#' @param df the data frame inpt
+#' @param df the data frame input
 #' @param X column name of exposure variables to run XWAS
 #' @param cov column name of covariates
 #' @param mod type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
 #' @param IDA list of IDs to include in XWAS
-#' @param removes any exposure response to remove from XWAS, in the form of a list
+#' @param removes any exposure response, categorical or numerical, to remove from XWAS. This should be in the form of a list
 #' @param adjust method for adjusting for multiple comparison, see ?p.adjust to see other options
 #'
 #' @export

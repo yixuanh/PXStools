@@ -3,16 +3,16 @@
 #' @source
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
 
-#' @param df the data frame inpt
-#' @param X column name of signficant exposure variables from XWAS
+#' @param df the data frame input
+#' @param X column name of significant exposure variables from XWAS
 #' @param cov column name of covariates
 #' @param mod type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
 #' @param IDA list of IDs to from XWAS procedure
 #' @param IDB list of IDs for testing set
 #' @param IDC list of IDs in the final prediction set
 #' @param seed setting a seed
-#' @param removes any exposure response to remove from XWAS, in the form of a list
-#' @param fdr whether or not to adjust for multiple hypothesis correctin
+#' @param removes any exposure response, categorical or numerical, to remove from the analysis This should be in the form of a list
+#' @param fdr whether or not to adjust for multiple hypothesis correction
 #' @param intermediate whether or not to save intermediate files
 #' @param folds number of folds for LASSO CV, default is 10
 
@@ -173,7 +173,7 @@ PXS = function(df,
   M <- unique(rt$Var[which(rt$VR %in% M$name)])
 
   if (length(M) == 0) {
-    log_warn('no variables remian after LASSO')
+    log_warn('no variables remain after LASSO')
     break
   }
 
@@ -226,7 +226,7 @@ PXS = function(df,
   sig = fit$term[which(fit$p.value < 0.05)]
   sig = unique(rt$Var[which(rt$VR %in% sig)])
 
-  log_info(paste(length(sig), 'remain after FS iteration 1'))
+  log_info(paste(length(sig), 'remain after BackS iteration 1'))
 
   if (length(sig) == 0) {
     break
@@ -261,11 +261,11 @@ PXS = function(df,
     sig = unique(rt$Var[which(rt$VR %in% sig)])
 
     if (length(setdiff(sig, initial)) == 0) {
-      log_info(cat(length(sig),"remain after final FS iteration, they are: ", sig,"\n",sep=" "))
+      log_info(cat(length(sig),"remain after final BackS iteration, they are: ", sig,"\n",sep=" "))
       break
     }
 
-    log_info(paste(length(sig), 'remain after FS iteration', i))
+    log_info(paste(length(sig), 'remain after BackS iteration', i))
 
   }
   #################

@@ -3,16 +3,16 @@
 #' @source
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
 
-#' @param df the data frame inpt
-#' @param X column name of signficant exposure variables from XWAS
+#' @param df the data frame input
+#' @param X column name of significant exposure variables from XWAS
 #' @param cov column name of covariates
 #' @param mod type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
 #' @param IDA list of IDs to from XWAS procedure
 #' @param IDB list of IDs for testing set
 #' @param IDC list of IDs in the final prediction set
 #' @param seed setting a seed
-#' @param removes any exposure response to remove from XWAS, in the form of a list
-#' @param fdr whether or not to adjust for multiple hypothesis correctin
+#' @param removes any exposure response, categorical or numerical, to remove from the analysis This should be in the form of a list
+#' @param fdr whether or not to adjust for multiple hypothesis correction
 #' @param intermediate whether or not to save intermediate files
 #' @param folds number of folds for the cross validation step, default is 10.
 
