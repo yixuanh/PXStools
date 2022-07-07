@@ -1,5 +1,5 @@
 #' @title manhattan_xwas
-#' @description  this is a function plot the p values of the XWAS results, analagous to a manhattan plot.
+#' @description  this is a function plot the p values of the XWAS results, analogous to a manhattan plot.
 #'   since the y axis is in the -log scale, there may be issues with plotting if the p value is zero or very close to zero (taking the neg log of it will be infinite)
 
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}

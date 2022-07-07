@@ -1,10 +1,9 @@
-#' @title plot_coefficients
-#' @description  this is a function plot the coefficients XWAS results
+#' @title plot_coeff_xwas
+#' @description  this is a function that plots the coefficients of the XWAS results
 
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
 
 #' @param xdff  matrix returned from XWAS function, rownames of matrix should be the X variables
-
 #' @param pval column name of p value
 #' @param coeff column name of coefficients
 #' @param thresh p value threshold for signficance

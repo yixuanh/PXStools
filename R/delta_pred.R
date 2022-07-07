@@ -1,7 +1,7 @@
 #' @title delta_pred
-#' @description  this is a function that claculates the change in predictive ability between two models. For linear mdoels,
-#' a change in R2 wil be reported; for logistic regression models, a change in AUC will be reported; for Cox regresison modelx,
-#' a change in C index will be reported. The column name of the Y variable must be "PHENO". For Cox regression models, the time to event column name must be "TIME"/
+#' @description  this is a function that calculates the change in predictive ability between two models. For linear models,
+#' a change in R2 will be reported; for logistic regression models, a change in AUC will be reported; for Cox regression models,
+#' a change in C index will be reported. The column name of the Y variable must be "PHENO". For Cox regression models, the time to event column name must be "TIME"
 
 #' @author Yixuan He, \email{yixuan_he@@hms.harvard.edu}
 

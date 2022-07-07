@@ -11,10 +11,10 @@
 #' @param IDB list of IDs for testing set
 #' @param IDC list of IDs in the final prediction set
 #' @param seed setting a seed
-#' @param removes any exposure response, categorical or numerical, to remove from the analysis This should be in the form of a list
+#' @param removes any exposure response, categorical or numerical, to remove from the analysis. This should be in the form of a list
 #' @param fdr whether or not to adjust for multiple hypothesis correction
 #' @param intermediate whether or not to save intermediate files
-#' @param folds number of folds for glmnet cross validaton, default is 10
+#' @param folds number of folds for glmnet cross validation, default is 10
 #' @param alph the alpha value used in glmnet, alpha = 1 is assumed by default (lasso),
 #' setting alpha = 0 for ridge, and anything in between 0 and 1 for elastic net.
 #' please refer to glmnet documentation for more details
@@ -129,17 +129,29 @@ PXS = function(df,
 
   lambdav <- NULL
 
-  log_info('LASSO step initiating...')
+  if(alph==0){
+    log_info('ridge regression initiating...')
+  }
+  if(alph==1){
+    log_info('LASSO initiating...')
+  }
+  if(alph>0&alph<1){
+    log_info('elastic net initiating...')
+  }
+  if(alph<0|alph>1){
+    log_info('please use an alpha value between 0 and 1')
+    break
+  }
   if (mod == 'lm') {
     cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,)
     best_lamb <- cv_output$lambda.min
-    log_info ('cross validated LASSO complete')
+    log_info ('cross validation complete')
   }
 
   if (mod == 'logistic') {
     cv_output <- glmnet::cv.glmnet(x_vars, y_var, nfolds=folds, alpha=alph, family = "binomial")
     best_lamb <- cv_output$lambda.min
-    log_info ('cross validated LASSO complete')
+    log_info ('cross validation complete')
   }
 
   if (mod == 'cox') {
@@ -150,7 +162,7 @@ PXS = function(df,
 
     cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,family='cox')
     best_lamb<-cv_output$lambda.min
-    log_info (paste('cross validated LASSO complete'))
+    log_info (paste('cross validation complete'))
 
   }
 
@@ -167,7 +179,7 @@ PXS = function(df,
 
   }
   if (intermediate == TRUE) {
-    saveRDS(lasso_best, 'lasso_best.rds')
+    saveRDS(lasso_best, 'regularization_best.rds')
   }
 
   tmp_coeffs <- coef(lasso_best)
@@ -177,12 +189,12 @@ PXS = function(df,
   M <- unique(rt$Var[which(rt$VR %in% M$name)])
 
   if (length(M) == 0) {
-    log_warn('no variables remain after LASSO')
+    log_warn('no variables remain after regularization')
     break
   }
 
   if (length(M) != 0) {
-    log_info(paste(length(M), 'variables remain after LASSO'))
+    log_info(paste(length(M), 'variables remain after regularization'))
   }
 
   ################
