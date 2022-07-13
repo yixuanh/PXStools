@@ -10,6 +10,7 @@
 #' @param IDA list of IDs to include in XWAS
 #' @param removes any exposure response, categorical or numerical, to remove from XWAS. This should be in the form of a list
 #' @param adjust method for adjusting for multiple comparison, see ?p.adjust to see other options
+#' @param intermediate saves an intermediate file containing the coefficients of covariates. Default is False
 #'
 #' @export
 #'
@@ -26,6 +27,7 @@ xwas = function(df,
                 cov,
                 mod,
                 IDA,
+                intermediate=F,
                 removes = NULL,
                 adjust = 'BY') {
 
@@ -35,9 +37,13 @@ xwas = function(df,
   ci <- which(colnames(df) %in% X)
   df$place = 0
   mat = c()
+  if(intermediate==T){
+    coeffs=c()
+  }
 
   pb <- txtProgressBar(0, length(ci), style = 3)
   stepi = 0
+
 
   for (i in ci) {
     stored <-
@@ -96,6 +102,21 @@ xwas = function(df,
 
     summary_fit <- data.frame(rbind(summary(fit)$coefficients),nrow(stored))
 
+    if(intermediate==T){
+      if(length(cov)==0){
+        log_warn('there are no covariates.')
+        break
+      }
+      if(mod=='cox'){
+        coefftemp <- summary_fit[1:(which(row.names(summary_fit) == 'place')-1), ]
+        rownames(coefftemp) <-paste(colnames(df)[i],rownames(coefftemp),sep='_')
+      }
+      else{
+        coefftemp <- summary_fit[1:which(summary_fit[, 1] == tempp), ]
+        rownames(coefftemp) <-paste(colnames(df)[i],rownames(coefftemp),sep='_')
+      }
+      coeffs = rbind(coeffs,coefftemp)
+    }
     summary_fit <-
       summary_fit[(which(summary_fit[, 1] == tempp):nrow(summary_fit)), ]
     mat = rbind(mat, summary_fit)
@@ -109,5 +130,8 @@ xwas = function(df,
 
   mat$fdr = p.adjust(mat[, ncol(mat)-1],method=adjust)
 
+  if(intermediate==T){
+    write.csv(coeffs,'XWAS_covariate_coefficients.csv')
+  }
   return(mat)
 }
