@@ -62,6 +62,8 @@ In addition to the the final prediction group, two other groups are needed to tr
 *removes* any exposure response, categorical or numerical, to remove from XWAS. This should be in the form of a list
 
 *adjust* method for adjusting for multiple comparison, see ?p.adjust to see other options
+
+*intermdiate* saves an intermediate file containing the coefficients of covariates. Default is False
 _________
 
 ``manhattan_xwas()``: plots the p values of the XWAS results, analogous to a GWAS manhattan plot. Note: since the y axis is in the -log scale, there may be issues with plotting if the p value is zero or very close to zero (taking the neg log of it will be infinite)
