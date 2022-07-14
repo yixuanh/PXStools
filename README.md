@@ -241,7 +241,7 @@ head(PXSS)
 # 3976   MALE  66    1.470289  CATEGORY_2  0.012189827  0.0047791377  0.003133365  0.0117178749 -0.01354368 -0.017855771      G      C   102  93.11601
 # 4364 FEMALE  48   16.530377  CATEGORY_1 -0.036801092 -0.0207197737 -0.011525390  0.0050126760 -0.01347574 -0.001232650      D      C    79  77.92055
 ```
-Get the change in prediction between a model with just baseline covariates versus with the addition of PXS
+Get the change in R2 between a model with just baseline covariates versus with the addition of PXS
 ```R
 varsA=COV
 varsB=c(COV,'PXS')
@@ -313,11 +313,11 @@ head(XWAS_results)
 
 #obtain significant X's
 sigx=row.names(XWAS_results)[which(XWAS_results$fdr<0.05)]
-sigx[9:length(sigx)]=substr(sigx[9:length(sigx)],1,nchar(sigx[9:length(sigx)])-1) #remove levels and only keep name of variable
+sigx[8:length(sigx)]=substr(sigx[8:length(sigx)],1,nchar(sigx[8:length(sigx)])-1) #remove levels and only keep name of variable
 sigx=unique(sigx)
 
 sigx
-# "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_18"  "VAR_22C" "VAR_22"  "VAR_25"
+# "VAR_1"   "VAR_2"   "VAR_6"   "VAR_8"   "VAR_9"   "VAR_10"  "VAR_18"  "VAR_22"  "VAR_25"
 ```
 
 Visualize results from XWAS: 
@@ -330,14 +330,14 @@ plot_coeff_xwas(xdff = XWAS_results,pval = 'fdr',coeff='Estimate',thresh = 0.05)
 Run PXS (with only signficant exposures): 
 ```R
 #PXSS=PXS(df=BINARY_DF,X=sigx,cov=COV,removes = REM,mod = 'logistic',IDA = id_A,IDB = id_B,IDC = id_C,seed=5)
-#intiating PXS procedure with 10 variables
+#intiating PXS procedure with 9 variables
 #excluding individuals...
 #914 individuals remain
 #transformed responsetab
 #LASSO initiating...
 #cross validation complete
-#the  min lamda  is: 0.00912641134021874
-#7 variables remain after regularization
+#the  min lamda  is: 0.0313078739623684
+#9 variables remain after regularization
 #excluding individuals...
 #930 individuals remain
 #5 remain after BackS iteration 1
@@ -362,6 +362,18 @@ PXSS=PXS(df=BINARY_DF,X=sigx,cov=COV,removes = REM,mod = 'logistic',IDA = id_A,I
 #5 remain after final BackS iteration, they are:  VAR_22 VAR_25 VAR_1 VAR_6 VAR_8 
 #0 individuals removed due to factor having a new level
 ```
+
+To get the change in AUC between a model with just baseline covariates versus with the addition of PXS:
+
+```R
+varsA=COV
+varsB=c(COV,'PXS')
+delta_pred(PXSS,varsA,varsB,'logistic')
+# change in AUC: 0.377 (0.338, 0.385)
+# first model AUC: 0.526 (0.527, 0.563)
+# second model AUC: 0.903 (0.892, 0.914)
+````
+
 ## Example (Survival Analysis)
 This will be an example using the ``BINARY_DF.RData`` dataset provided in the package. The BINARY_DF dataset contains the individual ID, sex, gender, continuous and categorical variables, a binary phenotype, and time to event data. We will use SEX, AGE, COV_Q_OTHER, and COV_C_OTHER, as our covariate. The initial set of exposures that we are interested in are VAR_1 through VAR_33. We will be using the logistic model. 
 
@@ -425,3 +437,14 @@ PXSS=PXS(df=BINARY_DF,X=sigx,cov=COV,removes = REM,mod = 'cox',IDA = id_A,IDB = 
 #4 remain after final BackS iteration, they are:  VAR_25 VAR_1 VAR_10 VAR_18 
 #0 individuals removed due to factor having a new level
 ```
+To get the change in C index between a model with just baseline covariates versus with the addition of PXS:
+
+```R
+varsA=COV
+varsB=c(COV,'PXS')
+delta_pred(PXSS,varsA,varsB,'lm')
+# change in C index: 0.148 (0.123, 0.162)
+# first model C index: 0.522 (0.512, 0.547)
+# second model C index: 0.67 (0.658, 0.683)
+````
+To note: for survival anlysis, delta_pred() is only able to get change in C index. If you would like to get the net reclassification index (NRI), please check out existing methods such as the ['nricens'](https://cran.r-project.org/web/packages/nricens/nricens.pdf) R package.
