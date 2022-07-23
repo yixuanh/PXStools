@@ -165,6 +165,9 @@ PXS = function(df,
     log_info (paste('cross validation complete'))
 
   }
+  if (mod %notin% c('cox', 'lm', 'logistic')) {
+    log_warn('please specificy a regression model: lm, logsitic, or cox ')
+  }
 
   log_info(paste('the  min lamda  is:', best_lamb))
 

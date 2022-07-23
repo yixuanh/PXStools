@@ -82,7 +82,7 @@ xwas = function(df,
         survival::coxph(survival::Surv(TIME, PHENO) ~ 0 + ., data = stored)
     }
     if (mod %notin% c('cox', 'lm', 'logistic')) {
-      log_warn('please specificy a regression model: linear, logsitic, or cox ')
+      log_warn('please specificy a regression model: lm, logsitic, or cox ')
     }
 
     #get index for which coeffs to extract
