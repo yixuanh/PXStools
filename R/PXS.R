@@ -172,13 +172,13 @@ PXS = function(df,
   logger::log_info(paste('the  min lamda  is:', best_lamb))
 
   if(mod=='lm'){
-    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,)
+    lasso_best <- glmnet::glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,)
   }
   if(mod=='logistic'){
-    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,family = "binomial")
+    lasso_best <- glmnet::glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,family = "binomial")
   }
   if(mod=='cox'){
-    lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,family='cox')
+    lasso_best <- glmnet::glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,family='cox')
 
   }
   if (intermediate == TRUE) {
