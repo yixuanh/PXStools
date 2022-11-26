@@ -46,7 +46,7 @@ PXS = function(df,
   set.seed(seed)
 
   #check to make sure each column has more than 1 unique value
-  log_info(paste('intiating PXS procedure with', length(X), 'variables'))
+  logger::log_info(paste('intiating PXS procedure with', length(X), 'variables'))
 
 
   dfA = df[which(df$ID %in% IDA), ]
@@ -59,7 +59,7 @@ PXS = function(df,
   one = which(sapply(keep, function(x)
     length(unique(x)) > 1) == FALSE)
   if (length(one) != 0) {
-    log_warn(paste(
+    logger::log_warn(paste(
       colnames(keep)[one],
       'has only one unique value, please double check or remove.'
     ))
@@ -67,17 +67,17 @@ PXS = function(df,
   }
 
   if (length(removes) != 0) {
-    log_info('excluding individuals...')
+    logger::log_info('excluding individuals...')
     b=apply(keep, 1, function(r) any(r %in% removes))
     if(length(which(b==TRUE))!=0){
       keep=keep[-which(b==TRUE),]
     }
     else{
-      log_info('no responses to remove')
+      logger::log_info('no responses to remove')
     }
   }
   keep = na.omit(keep)
-  log_info(paste(nrow(keep),'individuals remain'))
+  logger::log_info(paste(nrow(keep),'individuals remain'))
 
 
   responsetab=function(dff){
@@ -87,7 +87,7 @@ PXS = function(df,
       class(dff[[x]])))
     if(nrow(nums)!=2|ncol(dff)==2){
       nums=t(nums)
-      log_warn('transformed responsetab')
+      logger::log_warn('transformed responsetab')
     }
 
     cati = colnames(nums)[which(nums[1,] != 'numeric')]
@@ -130,28 +130,28 @@ PXS = function(df,
   lambdav <- NULL
 
   if(alph==0){
-    log_info('ridge regression initiating...')
+    logger::log_info('ridge regression initiating...')
   }
   if(alph==1){
-    log_info('LASSO initiating...')
+    logger::log_info('LASSO initiating...')
   }
   if(alph>0&alph<1){
-    log_info('elastic net initiating...')
+    logger::log_info('elastic net initiating...')
   }
   if(alph<0|alph>1){
-    log_info('please use an alpha value between 0 and 1')
+    logger::log_info('please use an alpha value between 0 and 1')
     break
   }
   if (mod == 'lm') {
     cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,)
     best_lamb <- cv_output$lambda.min
-    log_info ('cross validation complete')
+    logger::log_info ('cross validation complete')
   }
 
   if (mod == 'logistic') {
     cv_output <- glmnet::cv.glmnet(x_vars, y_var, nfolds=folds, alpha=alph, family = "binomial")
     best_lamb <- cv_output$lambda.min
-    log_info ('cross validation complete')
+    logger::log_info ('cross validation complete')
   }
 
   if (mod == 'cox') {
@@ -162,14 +162,14 @@ PXS = function(df,
 
     cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,family='cox')
     best_lamb<-cv_output$lambda.min
-    log_info (paste('cross validation complete'))
+    logger::log_info (paste('cross validation complete'))
 
   }
   if (mod %notin% c('cox', 'lm', 'logistic')) {
-    log_warn('please specificy a regression model: lm, logsitic, or cox ')
+    logger::log_warn('please specificy a regression model: lm, logsitic, or cox ')
   }
 
-  log_info(paste('the  min lamda  is:', best_lamb))
+  logger::log_info(paste('the  min lamda  is:', best_lamb))
 
   if(mod=='lm'){
     lasso_best <- glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,)
@@ -192,12 +192,12 @@ PXS = function(df,
   M <- unique(rt$Var[which(rt$VR %in% M$name)])
 
   if (length(M) == 0) {
-    log_warn('no variables remain after regularization')
+    logger::log_warn('no variables remain after regularization')
     break
   }
 
   if (length(M) != 0) {
-    log_info(paste(length(M), 'variables remain after regularization'))
+    logger::log_info(paste(length(M), 'variables remain after regularization'))
   }
 
   ################
@@ -209,15 +209,15 @@ PXS = function(df,
   }
 
   if (length(removes) != 0) {
-    log_info('excluding individuals...')
+    logger::log_info('excluding individuals...')
     b=apply(dfB, 1, function(r) any(r %in% removes))
     if(length(which(b==TRUE))!=0){
       dfB=dfB[-which(b==TRUE),]
     }
     else{
-      log_info('no responses to remove')
+      logger::log_info('no responses to remove')
     }
-    log_info(paste(nrow(dfB),'individuals remain'))
+    logger::log_info(paste(nrow(dfB),'individuals remain'))
 
   }
 
@@ -246,7 +246,7 @@ PXS = function(df,
   sig = fit$term[which(fit$p.value < 0.05)]
   sig = unique(rt$Var[which(rt$VR %in% sig)])
 
-  log_info(paste(length(sig), 'remain after BackS iteration 1'))
+  logger::log_info(paste(length(sig), 'remain after BackS iteration 1'))
 
   if (length(sig) == 0) {
     break
@@ -281,11 +281,11 @@ PXS = function(df,
     sig = unique(rt$Var[which(rt$VR %in% sig)])
 
     if (length(setdiff(sig, initial)) == 0) {
-      log_info(cat(length(sig),"remain after final BackS iteration, they are: ", sig,"\n",sep=" "))
+      logger::log_info(cat(length(sig),"remain after final BackS iteration, they are: ", sig,"\n",sep=" "))
       break
     }
 
-    log_info(paste(length(sig), 'remain after BackS iteration', i))
+    logger::log_info(paste(length(sig), 'remain after BackS iteration', i))
 
   }
   #################
@@ -351,7 +351,7 @@ PXS = function(df,
       C_temp=C_temp[-id,]
     }
   }
-  log_warn(paste((templength-nrow(C_temp)),'individuals removed due to factor having a new level'))
+  logger::log_warn(paste((templength-nrow(C_temp)),'individuals removed due to factor having a new level'))
 
 
   if(mod=='lm'){
