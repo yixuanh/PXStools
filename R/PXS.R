@@ -59,7 +59,7 @@ PXS = function(df,
   one = which(sapply(keep, function(x)
     length(unique(x)) > 1) == FALSE)
   if (length(one) != 0) {
-    logger::log_warn(paste(
+    logger::log_error(paste(
       colnames(keep)[one],
       'has only one unique value, please double check or remove.'
     ))
@@ -139,8 +139,8 @@ PXS = function(df,
     logger::log_info('elastic net initiating...')
   }
   if(alph<0|alph>1){
-    logger::log_info('please use an alpha value between 0 and 1')
-    break
+    logger::log_error('please use an alpha value between 0 and 1')
+    stop()
   }
   if (mod == 'lm') {
     cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,)
@@ -192,8 +192,8 @@ PXS = function(df,
   M <- unique(rt$Var[which(rt$VR %in% M$name)])
 
   if (length(M) == 0) {
-    logger::log_warn('no variables remain after regularization')
-    break
+    logger::log_error('no variables remain after regularization')
+    stop()
   }
 
   if (length(M) != 0) {
@@ -249,7 +249,8 @@ PXS = function(df,
   logger::log_info(paste(length(sig), 'remain after BackS iteration 1'))
 
   if (length(sig) == 0) {
-    break
+    logger::log_error('no variables remain after BackS iteration 1')
+    stop()
   }
 
   initial = sig
