@@ -69,10 +69,10 @@ PXS = function(df,
   if (length(removes) != 0) {
     logger::log_info('excluding individuals...')
     b=apply(keep, 1, function(r) any(r %in% removes))
-    if(length(which(b==TRUE))!=0){
+    if (length(which(b==TRUE))!=0) {
       keep=keep[-which(b==TRUE),]
     }
-    else{
+    else {
       logger::log_info('no responses to remove')
     }
   }
@@ -83,32 +83,32 @@ PXS = function(df,
   responsetab=function(dff){
     resptab=c()
     resptab2=c()
-    nums = data.frame(sapply(colnames(dff), function(x)
+    nums = data.frame(class = sapply(colnames(dff), function(x)
       class(dff[[x]])))
-    if(nrow(nums)!=2|ncol(dff)==2){
+    if (nrow(nums)!=2|ncol(dff)==2) {
       nums=t(nums)
       logger::log_warn('transformed responsetab')
     }
 
     cati = colnames(nums)[which(nums[1,] != 'numeric')]
-    if(length(cati)!=0){
+    if (length(cati)!=0) {
     resptab = plyr::ldply(dff[which(colnames(dff)%in%cati)], function(x)
       t(rbind(names(table(
         x
       )), table(x))))
-    resptab$varsrespon = paste(resptab[, 1], resptab[, 2], sep = '')
+    resptab$varsrespon = paste(resptab[, 1], resptab[, 2], sep = '_')
 
     colnames(resptab) = c('Var', 'Response', 'N','VR')
     resptab$Response=as.character(resptab$Response)
     }
 
     nums= colnames(nums)[which(nums[1,] == 'numeric')]
-    if(length(nums)!=0){
-      resptab2=cbind(nums,nrow(dff),nrow(dff),nums)
-      colnames(resptab2)=c('Var', 'Response', 'N','VR')
+    if (length(nums)!=0) {
+      resptab2 = cbind(nums,nrow(dff),nrow(dff),nums)
+      colnames(resptab2) = c('Var', 'Response', 'N','VR')
     }
 
-    resptab=rbind(resptab,resptab2)
+    resptab = rbind(resptab,resptab2)
     return(resptab)
   }
 
@@ -116,7 +116,7 @@ PXS = function(df,
   rt=responsetab(Xtemp)
   nn=which(rt$N==0)
   if(length(nn)!=0){
-  rt=rt[-which(rt$N==0),]
+    rt=rt[-which(rt$N==0),]
   }
 
   ##REGULARIZATION
@@ -129,32 +129,31 @@ PXS = function(df,
 
   lambdav <- NULL
 
-  if(alph==0){
+  if (alph==0){
     logger::log_info('ridge regression initiating...')
-  }
-  if(alph==1){
+  } else if (alph==1){
     logger::log_info('LASSO initiating...')
-  }
-  if(alph>0&alph<1){
+  } else if (alph>0&alph<1){
     logger::log_info('elastic net initiating...')
-  }
-  if(alph<0|alph>1){
+  } else {
     logger::log_error('please use an alpha value between 0 and 1')
     stop()
   }
+  
   if (mod == 'lm') {
+    
     cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,)
     best_lamb <- cv_output$lambda.min
     logger::log_info ('cross validation complete')
-  }
-
-  if (mod == 'logistic') {
+    
+  } else if (mod == 'logistic') {
+    
     cv_output <- glmnet::cv.glmnet(x_vars, y_var, nfolds=folds, alpha=alph, family = "binomial")
     best_lamb <- cv_output$lambda.min
     logger::log_info ('cross validation complete')
-  }
-
-  if (mod == 'cox') {
+    
+  } else if (mod == 'cox') {
+    
     y_var = cbind(keep$PHENO, keep$TIME)
     colnames(y_var) = c( 'status','time')
     y_var=as.matrix(y_var)
@@ -163,33 +162,29 @@ PXS = function(df,
     cv_output <- glmnet::cv.glmnet(x_vars, y_var,nfolds=folds, alpha=alph,family='cox')
     best_lamb<-cv_output$lambda.min
     logger::log_info (paste('cross validation complete'))
-
-  }
-  if (mod %notin% c('cox', 'lm', 'logistic')) {
+    
+  } else {
     logger::log_warn('please specificy a regression model: lm, logsitic, or cox ')
   }
 
   logger::log_info(paste('the  min lamda  is:', best_lamb))
 
-  if(mod=='lm'){
+  if (mod=='lm') {
     lasso_best <- glmnet::glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,)
-  }
-  if(mod=='logistic'){
+  } else if (mod=='logistic') {
     lasso_best <- glmnet::glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,family = "binomial")
-  }
-  if(mod=='cox'){
+  } else if (mod=='cox') {
     lasso_best <- glmnet::glmnet(x_vars, y_var,  lambda = best_lamb, alpha=alph,family='cox')
-
   }
+  
   if (intermediate == TRUE) {
     saveRDS(lasso_best, 'regularization_best.rds')
   }
 
   tmp_coeffs <- coef(lasso_best)
   #save variables with non-zero coeffs
-  M <-
-    data.frame(name = tmp_coeffs@Dimnames[[1]][tmp_coeffs@i + 1], coefficient = tmp_coeffs@x)
-  M <- unique(rt$Var[which(rt$VR %in% M$name)])
+  M <- data.frame(name = tmp_coeffs@Dimnames[[1]][tmp_coeffs@i + 1], coefficient = tmp_coeffs@x)
+  M <- unique(rt$Var[which(rt$Var %in% M$name)])
 
   if (length(M) == 0) {
     logger::log_error('no variables remain after regularization')
@@ -222,20 +217,21 @@ PXS = function(df,
   }
 
   if (mod == 'lm') {
+    
     B_temp <-
       data.frame(dfB[, c(which(colnames(dfB) %in% c('PHENO', cov, M)))])
     B_temp<-na.omit(B_temp)
     fit <- broom::tidy(lm(PHENO ~ 0 + ., data = B_temp))
-  }
-
-  if (mod == 'logistic') {
+    
+  } else if (mod == 'logistic') {
+    
     B_temp <-
       data.frame(dfB[, c(which(colnames(dfB) %in% c('PHENO', cov, M)))])
     B_temp<-na.omit(B_temp)
     fit <- broom::tidy(glm(PHENO ~ 0 + ., data = B_temp, family = 'binomial'))
-  }
-
-  if (mod == 'cox') {
+    
+  } else if (mod == 'cox') {
+    
     B_temp <-
       data.frame(dfB[, c(which(colnames(dfB) %in% c('PHENO', 'TIME', cov, M)))])
     B_temp<-na.omit(B_temp)
@@ -244,7 +240,7 @@ PXS = function(df,
   }
 
   sig = fit$term[which(fit$p.value < 0.05)]
-  sig = unique(rt$Var[which(rt$VR %in% sig)])
+  sig = unique(rt$Var[which(rt$Var %in% sig)])
 
   logger::log_info(paste(length(sig), 'remain after BackS iteration 1'))
 
@@ -279,7 +275,7 @@ PXS = function(df,
     }
 
     sig = fit$term[which(fit$p.value < 0.05)]
-    sig = unique(rt$Var[which(rt$VR %in% sig)])
+    sig = unique(rt$Var[which(rt$Var %in% sig)])
 
     if (length(setdiff(sig, initial)) == 0) {
       logger::log_info(cat(length(sig),"remain after final BackS iteration, they are: ", sig,"\n",sep=" "))
@@ -291,10 +287,9 @@ PXS = function(df,
   }
   #################
   ##FINAL PREDICTION MODEL
-  if(mod=='lm'|mod=='logistic'){
+  if (mod=='lm'|mod=='logistic') {
     dfBC=df[which(df$ID%in%c(IDB,IDC)),c(which(colnames(df) %in% c('ID','PHENO', cov, sig)))]
-  }
-  if(mod=='cox'){
+  } else if (mod=='cox') {
     dfBC=df[which(df$ID%in%c(IDB,IDC)),c(which(colnames(df) %in% c('ID','PHENO', 'TIME',cov, sig)))]
   }
   dfBC=na.omit(dfBC)
@@ -310,21 +305,21 @@ PXS = function(df,
 
   #final model fit
   if (mod == 'lm') {
+    
     B_temp <-
       data.frame(dfBC[which(dfBC$ID%in%IDB), c(which(colnames(dfBC) %in% c('PHENO', cov, sig)))])
     B_temp<-na.omit(B_temp)
     fit <- lm(PHENO ~ 0 + ., data = B_temp)
 
-  }
-
-  if (mod == 'logistic') {
+  } else if (mod == 'logistic') {
+    
     B_temp <-
       data.frame(dfBC[which(dfBC$ID%in%IDB), c(which(colnames(dfBC) %in% c('PHENO', cov, sig)))])
     B_temp<-na.omit(B_temp)
     fit <- glm(PHENO ~ 0 + ., data = B_temp, family = 'binomial')
-  }
-
-  if (mod == 'cox') {
+    
+  } else if (mod == 'cox') {
+    
     B_temp <-
       data.frame(dfBC[which(dfBC$ID%in%IDB), c(which(colnames(dfBC) %in% c('PHENO', 'TIME', cov, sig)))])
     B_temp<-na.omit(B_temp)
@@ -337,6 +332,8 @@ PXS = function(df,
     write.csv(coeffs,'coefficients.csv')
   }
 
+  
+  
   C_temp <-dfBC[which(dfBC$ID%in%IDC),]
 
   templength=nrow(C_temp)
@@ -357,11 +354,9 @@ PXS = function(df,
 
   if(mod=='lm'){
     C_temp$PXS=predict(fit,C_temp)
-  }
-  if (mod=='logistic'){
+  } else if (mod=='logistic'){
     C_temp$PXS=predict(fit,C_temp,type='response')
-  }
-  if (mod=='cox'){
+  } else if (mod=='cox'){
     C_temp$PXS=predict(fit,C_temp,type='risk')
   }
 
