@@ -9,7 +9,7 @@
 #' @param mod type of model to run; 'lm' for linear regression, 'logistic' for logistic regression; 'cox' for Cox regression
 #' @param IDA list of IDs to from XWAS procedure
 #' @param IDB list of IDs for testing set
-#' @param IDC list of IDs in the final prediction set
+#' @param IDC list of IDs in the final prediction set; set to an empty list if you simply wish to return the coefficients without applying PXS
 #' @param seed setting a seed
 #' @param removes any exposure response, categorical or numerical, to remove from the analysis. This should be in the form of a list
 #' @param fdr whether or not to adjust for multiple hypothesis correction
@@ -332,7 +332,12 @@ PXS = function(df,
     write.csv(coeffs,'coefficients.csv')
   }
 
+  if (length(IDC) == 0) {
+    logger::log_info("No testing IDs (IDC) found, returning coefficients")
+    return(coeffs)
+  }
   
+  logger::log_info("Testing IDs (IDC) found, computing and returning PXS")
   
   C_temp <-dfBC[which(dfBC$ID%in%IDC),]
 
